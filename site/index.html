@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="favicon.png">
+  <title>Trial Results Tracker</title>
+  <meta name="description" content="Which clinical trials have posted their results, measured against the WHO 12-month standard.">
+  <style>
+    :root { --ink: #1d2320; --muted: #5b625e; --bg: #fbfbf9; --rule: #e2e3df; }
+    @media (prefers-color-scheme: dark) { :root { --ink: #ecedea; --muted: #a2a8a4; --bg: #151816; --rule: #2b302d; } }
+    body { margin: 0; background: var(--bg); color: var(--ink); font: 17px/1.55 system-ui, sans-serif; }
+    main { max-width: 42rem; margin: 0 auto; padding: 4rem 1rem; }
+    h1 { font-size: 1.6rem; margin: 0 0 1rem; }
+    p { color: var(--muted); }
+    a { color: inherit; }
+    hr { border: 0; border-top: 1px solid var(--rule); margin: 2rem 0; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Trial Results Tracker</h1>
+    <p>A tracker for whether clinical trials post their results on the registry within
+      12 months of completion — the WHO standard — whether or not a law requires it.</p>
+    <p><strong>Status: under construction.</strong> No data is published yet.</p>
+    <hr>
+    <p>Builds on Keestra et al., <a href="https://doi.org/10.1186/s13063-021-05330-5">Trials 2021</a>.
+      Source: <a href="https://github.com/morris-frank/trial-results-tracker">github.com/morris-frank/trial-results-tracker</a>.</p>
+  </main>
+</body>
+</html>

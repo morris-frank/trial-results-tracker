@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="96" fill="#1d2320"/>
+  <!-- a registry ledger: three rows, one posted (tick), two still due (open) -->
+  <g fill="none" stroke-width="28" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M112 152l28 28 52-56" stroke="#8ede3d"/>
+    <path d="M240 152h160" stroke="#ecedea"/>
+    <rect x="112" y="232" width="80" height="64" rx="14" stroke="#ecedea"/>
+    <path d="M240 264h160" stroke="#ecedea" opacity=".55"/>
+    <rect x="112" y="344" width="80" height="64" rx="14" stroke="#ecedea"/>
+    <path d="M240 376h120" stroke="#ecedea" opacity=".55"/>
+  </g>
+</svg>

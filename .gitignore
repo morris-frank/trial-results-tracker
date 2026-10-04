@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.ruff_cache/
+.pytest_cache/
+# Tooling
+.mise/
+.DS_Store
+.vercel/
+# Build output and fetched registry data: regenerated, never committed.
+dist/
+data/
+# Secrets: auto-loaded by mise, documented in .env.example.
+.env
+.env.local
+mise.local.toml

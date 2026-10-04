@@ -1,0 +1,29 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # Installs the exact toolchain from mise.toml/mise.lock — same as local.
+      - uses: jdx/mise-action@v2
+        with:
+          cache: true
+      - run: uv sync --frozen
+      # The prek hooks ARE the lint gate — one definition, run identically here.
+      # SKIP: the gitleaks hook scans staged files, which CI has none of; the
+      # whole-tree scan below is the CI equivalent.
+      - run: prek run --all-files --show-diff-on-failure
+        env:
+          SKIP: gitleaks
+      - run: mise run test
+      - run: gitleaks dir . --redact --verbose # backstop to the commit hook
+      - run: mise run audit # dependency vulns vs the lock

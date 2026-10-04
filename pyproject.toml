@@ -1,0 +1,38 @@
+[project]
+name = "trial-results-tracker"
+version = "0.0.0"
+description = "Tracks whether clinical trials post their results, against the WHO 12-month standard rather than the narrower legal duties."
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.13"
+dependencies = []
+
+[project.scripts]
+trial-results-tracker = "trial_results_tracker.__main__:main"
+
+[build-system]
+requires = ["uv_build>=0.12,<0.13"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = ["pytest>=8"]
+
+[tool.uv]
+required-version = ">=0.12,<0.13" # enforce the uv minor that made the lock
+# Dependency cooldown: never resolve a release younger than this. Supply-chain
+# safety margin; reproducibility still comes from uv.lock + `uv sync --frozen`.
+exclude-newer = "2 weeks ago"
+
+[tool.pytest.ini_options]
+addopts = ["--strict-markers", "--strict-config"]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+# S = bandit rules, so no separate SAST tool.
+select = ["E", "F", "W", "I", "B", "UP", "S", "SIM"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101"]

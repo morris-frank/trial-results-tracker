@@ -1,0 +1,6 @@
+# Normalize to LF regardless of OS — keeps scripts runnable, kills diff noise.
+* text=auto eol=lf
+*.sh text eol=lf
+# Lockfiles are generated; treat as such (cleaner diffs/reviews).
+uv.lock linguist-generated=true
+mise.lock linguist-generated=true

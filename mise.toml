@@ -1,0 +1,70 @@
+# mise is the single source of truth for the toolchain.
+# Exact resolved versions are recorded in mise.lock (committed).
+min_version = "2026.7.13" # refuse to run with an older mise
+
+[settings]
+lockfile = true # write mise.lock for reproducibility
+
+[tools]
+uv = "0.12"
+ruff = "0.15"
+# Pre-1.0 / fast-moving security tooling — churn is expected, so track latest.
+gitleaks = "latest"
+prek = "latest"        # fast Rust drop-in for pre-commit
+osv-scanner = "latest"
+
+[env]
+UV_PROJECT_ENVIRONMENT = ".venv" # keep the venv at repo root
+# Auto-load credentials for every tool; both files are gitignored and
+# .env.example documents every key.
+_.file = [".env", ".env.local"]
+
+[tasks.setup]
+description = "Cold start: toolchain, frozen deps, git hooks, then verify"
+run = [
+  "mise install",
+  "uv sync --frozen",
+  "prek install",
+  "prek install -t pre-push",
+  "mise run check",
+]
+
+[tasks.install]
+description = "Dependency sync + hook install (no verify)"
+run = ["uv sync --frozen", "prek install", "prek install -t pre-push"]
+
+[tasks.lint]
+description = "Lint (ruff, no writes)"
+run = "ruff check ."
+
+[tasks.fmt]
+description = "Format in place (ruff)"
+run = ["ruff format .", "ruff check --fix ."]
+
+[tasks."fmt:check"]
+description = "Format check (ruff, no writes)"
+run = "ruff format --check ."
+
+[tasks.test]
+description = "Test suite (pytest)"
+run = "uv run --frozen pytest"
+
+[tasks.check]
+description = "Everything CI runs — the definition of done"
+depends = ["lint", "fmt:check", "test"]
+
+[tasks.hooks]
+description = "Run every hook over the whole repo"
+run = "prek run --all-files"
+
+[tasks.audit]
+description = "Dependency vulnerability scan against uv.lock"
+run = "osv-scanner scan --lockfile uv.lock"
+
+[tasks.secrets]
+description = "Secret scan of the working tree"
+run = "gitleaks dir . --redact --verbose"
+
+[tasks.build]
+description = "Build the static site into dist/ (what Vercel serves)"
+run = "uv run --frozen python -m trial_results_tracker build --out dist"
