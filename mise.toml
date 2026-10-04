@@ -65,6 +65,10 @@ run = "osv-scanner scan --lockfile uv.lock"
 description = "Secret scan of the working tree"
 run = "gitleaks dir . --redact --verbose"
 
+[tasks.fetch]
+description = "Pull a dated ClinicalTrials.gov snapshot into data/raw/ (about 20 min)"
+run = "uv run --frozen python -m trial_results_tracker fetch --out data/raw"
+
 [tasks.build]
 description = "Build the static site into dist/ (what Vercel serves)"
 run = "uv run --frozen python -m trial_results_tracker build --out dist"

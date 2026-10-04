@@ -1,0 +1,187 @@
+{
+ "version": {
+  "apiVersion": "2.0.5",
+  "dataTimestamp": "2026-10-02T09:00:04"
+ },
+ "pages": [
+  {
+   "totalCount": 3,
+   "studies": [
+    {
+     "protocolSection": {
+      "identificationModule": {
+       "nctId": "NCT01174160"
+      },
+      "statusModule": {
+       "statusVerifiedDate": "2015-11",
+       "overallStatus": "COMPLETED",
+       "startDateStruct": {
+        "date": "2010-08"
+       },
+       "primaryCompletionDateStruct": {
+        "date": "2012-09",
+        "type": "ACTUAL"
+       },
+       "completionDateStruct": {
+        "date": "2012-10",
+        "type": "ACTUAL"
+       },
+       "resultsFirstSubmitDate": "2015-10-09",
+       "resultsFirstSubmitQcDate": "2015-11-09",
+       "resultsFirstPostDateStruct": {
+        "date": "2015-12-15",
+        "type": "ESTIMATED"
+       },
+       "lastUpdatePostDateStruct": {
+        "date": "2015-12-15",
+        "type": "ESTIMATED"
+       }
+      },
+      "sponsorCollaboratorsModule": {
+       "responsibleParty": {
+        "type": "SPONSOR"
+       },
+       "leadSponsor": {
+        "name": "Advanz Pharma",
+        "class": "INDUSTRY"
+       }
+      },
+      "oversightModule": {},
+      "designModule": {
+       "studyType": "INTERVENTIONAL",
+       "enrollmentInfo": {
+        "count": 123,
+        "type": "ACTUAL"
+       }
+      }
+     },
+     "hasResults": true
+    },
+    {
+     "protocolSection": {
+      "identificationModule": {
+       "nctId": "NCT01916382"
+      },
+      "statusModule": {
+       "statusVerifiedDate": "2018-05",
+       "overallStatus": "UNKNOWN",
+       "startDateStruct": {
+        "date": "2014-04",
+        "type": "ACTUAL"
+       },
+       "primaryCompletionDateStruct": {
+        "date": "2016-02",
+        "type": "ACTUAL"
+       },
+       "completionDateStruct": {
+        "date": "2020-02-02",
+        "type": "ESTIMATED"
+       },
+       "lastUpdatePostDateStruct": {
+        "date": "2018-05-31",
+        "type": "ACTUAL"
+       }
+      },
+      "sponsorCollaboratorsModule": {
+       "responsibleParty": {
+        "type": "PRINCIPAL_INVESTIGATOR"
+       },
+       "leadSponsor": {
+        "name": "University of Liverpool",
+        "class": "OTHER"
+       }
+      },
+      "oversightModule": {},
+      "designModule": {
+       "studyType": "INTERVENTIONAL",
+       "enrollmentInfo": {
+        "count": 140,
+        "type": "ESTIMATED"
+       }
+      }
+     },
+     "annotationSection": {
+      "annotationModule": {
+       "unpostedAnnotation": {
+        "unpostedEvents": [
+         {
+          "type": "RELEASE",
+          "date": "2020-02-13"
+         },
+         {
+          "type": "RESET",
+          "date": "2020-02-28"
+         },
+         {
+          "type": "RELEASE",
+          "date": "2025-02-19"
+         },
+         {
+          "type": "RESET",
+          "date": "2025-03-11"
+         }
+        ]
+       }
+      }
+     },
+     "hasResults": false
+    }
+   ],
+   "nextPageToken": "page-2"
+  },
+  {
+   "studies": [
+    {
+     "protocolSection": {
+      "identificationModule": {
+       "nctId": "NCT01245270"
+      },
+      "statusModule": {
+       "statusVerifiedDate": "2021-02",
+       "overallStatus": "COMPLETED",
+       "startDateStruct": {
+        "date": "2010-09"
+       },
+       "primaryCompletionDateStruct": {
+        "date": "2013-08",
+        "type": "ACTUAL"
+       },
+       "completionDateStruct": {
+        "date": "2013-08",
+        "type": "ACTUAL"
+       },
+       "resultsFirstSubmitDate": "2013-08-23",
+       "resultsFirstSubmitQcDate": "2014-08-13",
+       "resultsFirstPostDateStruct": {
+        "date": "2014-08-15",
+        "type": "ESTIMATED"
+       },
+       "lastUpdatePostDateStruct": {
+        "date": "2021-03-10",
+        "type": "ACTUAL"
+       }
+      },
+      "sponsorCollaboratorsModule": {
+       "responsibleParty": {
+        "type": "SPONSOR"
+       },
+       "leadSponsor": {
+        "name": "University of Aberdeen",
+        "class": "OTHER"
+       }
+      },
+      "oversightModule": {},
+      "designModule": {
+       "studyType": "INTERVENTIONAL",
+       "enrollmentInfo": {
+        "count": 8,
+        "type": "ACTUAL"
+       }
+      }
+     },
+     "hasResults": true
+    }
+   ]
+  }
+ ]
+}
