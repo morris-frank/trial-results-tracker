@@ -32,6 +32,8 @@ Built from the six notes in `docs/research/` (data-sources, methodology, landsca
 
 ## Decisions needed from the owner
 
+**Resolved 2026-10-04 by the owner: every decision below is taken as its recommended option.** Remaining human acts, which no task can do: the lawyer consult and enabling sponsor naming (D7), the two validation coders (D14), creating a dedicated Telegram bot and setting its repo secrets (T8), and contacting Keestra et al. (D11).
+
 1. **Which date counts as "reported"?** (a) `resultsFirstSubmitDate`, as Keestra's code and the FDAAA tracker do ([FDAAA about](https://fdaaa.trialstracker.net/about/)); (b) `resultsFirstPostDateStruct`, the strict "publicly posted" reading; (c) both as two headlines. Do not use `hasResults`: it is `Present(ResultsFirstSubmitDate)` ([metadata](https://clinicaltrials.gov/api/v2/studies/metadata)). **Recommend (a) as headline, posting date shown per trial, and a submission whose latest unposted event is RESET with nothing posted as its own "submitted, returned in QC" category.** Shapes T6.
 2. **The "due" threshold and the in-time cut.** The notes disagree (critique.md contradiction 1). (a) Keestra code: due when `as_of − PCD > 395 d`, in time when `results − PCD ≤ 365 d`; (b) due at 365 d, in time at ≤ 395 d; (c) one number, 395 d, for both. **Recommend (c):** one rule a reader can check, and it never calls a trial overdue while it is still inside the 30-day QC grace. Shapes T6.
 3. **Suspended trials.** (a) no reporting requirement (Keestra); (b) ongoing; (c) due once PCD + 395 d has passed. **Recommend (b).** Suspension is a pause, not an exemption. Shapes T6.
@@ -55,28 +57,28 @@ Built from the six notes in `docs/research/` (data-sources, methodology, landsca
 - Problem and direction: There is no data pipeline. Add `fetch`: page through `GET /api/v2/studies` with `filter.advanced=AREA[StudyType]INTERVENTIONAL`, `pageSize=1000`, `nextPageToken`→`pageToken`, keeping every other parameter fixed ([OpenAPI spec](https://clinicaltrials.gov/api/oas/v2)). Request only the classification fields in data-sources.md §1. Include the date structs and `type`s, the results submit/QC/post dates, `unpostedEvents`, `dispFirstSubmitDate`, `statusVerifiedDate`, `lastUpdatePostDateStruct`, `enrollmentInfo`, `whyStopped`, `leadSponsor`, `responsibleParty.type`, `collaborators` and the FDA oversight flags. Request no investigator, official, contact or point-of-contact fields (legal.md §2). Pace at about one request per 2 s and retry with backoff on 429/5xx. The ~50 req/min limit is **[unverified]** ([OpenAPI](https://clinicaltrials.gov/api/oas/v2) documents none). Write `data/raw/ctgov-<YYYY-MM-DD>.jsonl.gz` and `manifest.json`, containing `apiVersion`, `dataTimestamp` from `/api/v2/version`, the `totalCount` from the first page (`countTotal=true`), the rows written, the field list and the code SHA. Abort without writing a manifest when rows written ≠ `totalCount`, so a partial pull can never be published (critique.md gap 14). Rejected: AACT (account, unread terms); the `studies/download` zip (not in the spec); httpx/requests (stdlib `urllib` suffices).
 - Files and commands: `src/trial_results_tracker/fetch.py`, CLI subcommand `fetch --out data/raw` in `__main__.py`, `mise run fetch`, `tests/test_fetch.py` with a recorded two-page fixture in `tests/fixtures/` (no network in tests).
 - Done when: merged on main with `mise run check` green, plus `mise run fetch` locally produces a gzipped JSONL whose line count equals the manifest's `totalCount`, a test proves a short pull raises instead of writing a manifest, and no person-level field name appears in the field list (asserted by a test).
-- Blocked by decision: none
+- Decided (was blocked by): none
 
 ### T2. Parse raw records into typed trial rows
 - Depends on: T1
 - Problem and direction: Classification must not touch raw JSON. Add a `Trial` frozen dataclass and a pure `parse(record) -> Trial`. Normalise partial dates (`YYYY-MM`, `YYYY`) to the *last* day of the period, the reading most favourable to the sponsor, and keep a `date_precision` field. Do this for PCD, completion and results dates and for `statusVerifiedDate` too (critique.md gap 6). Keep `type` (ACTUAL/ESTIMATED) beside each date and keep `sponsor_raw` and `sponsor_class` unchanged. Derive `latest_unposted_event` from `unpostedEvents` by date. Unknown enum values become a typed "unrecognised" value rather than crashing, and are counted in the build report. Raising on unknown enums was rejected: an API minor-version change (currently 2.0.5, [version](https://clinicaltrials.gov/api/v2/version)) should flag rows, not kill the deploy.
 - Files and commands: `src/trial_results_tracker/model.py`, `src/trial_results_tracker/parse.py`, `tests/test_parse.py` (fixtures include NCT01245270, a submit/post gap, and NCT01916382, RELEASE then RESET twice, from data-sources.md §1).
 - Done when: merged on main with `mise run check` green, plus tests cover a full date, a month-partial date, a year-partial date, a missing PCD, an ESTIMATED PCD, an unknown status enum and an unposted-event sequence, and parsing a full local snapshot completes without exceptions.
-- Blocked by decision: none
+- Decided (was blocked by): none
 
 ### T3. Implement the Keestra-2021 replication rule set
 - Depends on: T2
 - Problem and direction: The first published numbers should be a faithful replication, so v1.0 changes can be measured against them later. Create `classify.py`: a pure `classify(trial, as_of, rules) -> Category` with no I/O (AGENTS.md rule 5). Ship the `KEESTRA_2021` rule set, transcribed from the predecessor's code, not its paper: threshold 365 + 30, results date = `results_first_submitted`, WITHDRAWN/SUSPENDED = no requirement, everything unmatched = inconsistent ([clinical_trial.py](https://github.com/LeeSean96/GlobalHealthRanking/blob/master/src/ClinicalTrialsTracker/model/clinical_trial.py), [definitions.py](https://github.com/LeeSean96/GlobalHealthRanking/blob/master/src/ClinicalTrialsTracker/definitions.py)). Read the source to settle the missing-PCD rule, which methodology.md and data-sources.md read differently (critique.md contradiction 3), and record the line cited in a docstring. Keep the MIT notice if any code is copied. The enum includes v1.0's extra categories from the start so T6 only adds rules.
 - Files and commands: `src/trial_results_tracker/classify.py`, `tests/test_classify_keestra.py` (one test per rule, plus the 395-day boundary on both sides).
 - Done when: merged on main with `mise run check` green, plus every Keestra category has a direct test, the boundary at exactly 395 days is tested, and the module imports nothing that does I/O (checked by a test on `classify.__dict__` or by import lint).
-- Blocked by decision: none
+- Decided (was blocked by): none
 
 ### T4. Publish snapshots as GitHub Releases and pin one
 - Depends on: T1
 - Problem and direction: Raw data must be reproducible but never committed (AGENTS.md rule 4). Add `.github/workflows/refresh.yml`, `workflow_dispatch` only for now. It runs `mise run fetch`, creates release `data-<YYYY-MM-DD>` with the `.jsonl.gz` and `manifest.json` as assets ([Releases limits](https://docs.github.com/en/repositories/releasing-projects-on-github/about-releases)), then commits the tag name to a one-line `SNAPSHOT` file on `main`. Releases are immutable once published; a same-day re-run fails rather than overwriting. Rejected: R2 (another account) and Hugging Face (degrades with daily commits, [limits](https://huggingface.co/docs/hub/storage-limits)). The scheduled trigger is added in T8.
 - Files and commands: `.github/workflows/refresh.yml` (`permissions: contents: write`), `SNAPSHOT`, `mise run snapshot` (wraps `gh release create`), README "Configuration" section updated.
 - Done when: merged on main with `mise run check` green, plus one manual dispatch produced a public `data-<date>` release with both assets and a bot commit updating `SNAPSHOT`, and re-running the same day fails without changing the release.
-- Blocked by decision: none
+- Decided (was blocked by): none
 
 ### T5. Build an unnamed aggregate site from the pinned snapshot
 - Depends on: T3, T4
@@ -88,7 +90,7 @@ Built from the six notes in `docs/research/` (data-sources, methodology, landsca
   Show no sponsor names (naming gate, D7). Use plain HTML and CSS with no client JS, analytics or cookies (legal.md §5). If the download fails the build fails; it never falls back to a placeholder. Rejected: a JS framework or DuckDB-WASM (bundle size **[unverified]**, not needed for aggregates).
 - Files and commands: `src/trial_results_tracker/snapshot.py` (download + verify), `src/trial_results_tracker/render.py`, `site/` templates, `__main__.py` `build`, `vercel.json` unchanged, `tests/test_build.py` extended with a fixture snapshot via a `--snapshot-dir` override.
 - Done when: merged on main with `mise run check` green, plus the Vercel deployment from that push shows category counts for the pinned snapshot with the data date and method label visible, and the page source contains no sponsor name.
-- Blocked by decision: none
+- Decided (was blocked by): none
 
 ### T6. Add the methodology v1.0 rule set and a Keestra crosswalk
 - Depends on: T3
@@ -104,21 +106,21 @@ Built from the six notes in `docs/research/` (data-sources, methodology, landsca
   Add a `crosswalk(trials, as_of)` that cross-tabulates the two rule sets, and render it on the methodology page so readers see how much each correction moves the numbers. Switch the site's default rule set to `V1_0` and keep `KEESTRA_2021` as the comparison. Rejected: replacing Keestra's rules outright (loses comparability) and replicating them unchanged (keeps known errors).
 - Files and commands: `src/trial_results_tracker/classify.py`, `src/trial_results_tracker/crosswalk.py`, `tests/test_classify_v1.py`, `docs/methodology.md` (the versioned method text; replaces the research recommendation).
 - Done when: merged on main with `mise run check` green, plus every v1.0 rule has a direct test that cites its decision number, the deployed methodology page shows the crosswalk table for the pinned snapshot, and every number on the site names `v1.0`.
-- Blocked by decision: 1, 2, 3, 4
+- Decided (was blocked by): 1, 2, 3, 4
 
 ### T7. Show the headline with confidence intervals and the stale-status range
 - Depends on: T6
 - Problem and direction: A single "% unreported" hides the TranspariMED problem: stale status inflates it, and some results are missed ([TranspariMED](https://www.transparimed.org/single-post/metascience-fail-four-lessons-from-inaccurate-data-on-missing-clinical-trial-results)). Compute the headline as due-not-reported over due, with a Wilson 95% CI and the denominator, as the Nordic and FDAAA studies report proportions with CIs ([Nilsonne 2025](https://doi.org/10.1016/j.jclinepi.2025.111710), [Lancet 2020](https://doi.org/10.1016/s0140-6736(19)33220-9)). Beside it, show an upper bound that counts status-overdue and inconsistent trials as unreported (D5). Wording stays a registry observation ("no summary results on ClinicalTrials.gov within 12 months of primary completion, as of <date>"), never "failed" or "hid" (legal.md §3). Rejected: Kaplan–Meier time-to-report in v1 (useful later, not needed for the headline).
 - Files and commands: `src/trial_results_tracker/stats.py` (pure, stdlib `math`), `render.py`, `tests/test_stats.py` (Wilson against hand-computed values, including n = 0 and p = 0/1).
 - Done when: merged on main with `mise run check` green, plus the deployed overview shows point estimate, CI, denominator and upper bound with the data date, and a test covers the zero-denominator case.
-- Blocked by decision: 5
+- Decided (was blocked by): 5
 
 ### T8. Schedule the refresh, deploy through the pin, and notify Telegram
 - Depends on: T4, T5
 - Problem and direction: Publishing must be continuous without manual dispatch. Add a `schedule` cron to `refresh.yml` at the D9 cadence. The `SNAPSHOT` commit then triggers the Vercel Git build, which serves as the deploy (D10a). Telegram notification is added as a step with `if: always()`. It calls `sendMessage` with rows, category deltas versus the previous manifest, release URL, and pass/fail, using `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` as repo secrets of a new bot, not mario's ([sendMessage](https://core.telegram.org/bots/api#sendmessage)). Add both keys to `.env.example` and a `mise run notify` for local testing. Document the 60-day inactivity rule and the fact that the pin commit is meant to count as activity **[unverified]** ([docs](https://docs.github.com/en/actions/managing-workflow-runs-and-deployments/managing-workflow-runs/disabling-and-enabling-a-workflow)). Rejected for now: `vercel deploy --prebuilt` with three Vercel secrets (D10b), kept as the fallback.
 - Files and commands: `.github/workflows/refresh.yml`, `src/trial_results_tracker/notify.py`, `.env.example`, `mise.toml` (`notify`), `tests/test_notify.py` (message formatting only; no network).
 - Done when: merged on main with `mise run check` green, plus one scheduled run completed end to end (release, pin commit, Vercel deploy live with the new data date) and its Telegram message arrived, and a forced failure run also sent a failure message.
-- Blocked by decision: 9, 10
+- Decided (was blocked by): 9, 10
 
 ### T9. Publish per-trial and per-sponsor downloads with provenance
 - Depends on: T6
@@ -130,21 +132,21 @@ Built from the six notes in `docs/research/` (data-sources, methodology, landsca
   Pool `INDIV` and person-named sponsors into one unnamed bucket in both files (D8; detection is `class = INDIV` plus responsible-party investigator equal to lead sponsor, critique.md gap 8). Data licence per D12. Sponsor names are present in the downloads but not ranked or featured on pages. This counts as naming, so confirm with D7 whether downloads wait for the gate. Rejected: Parquet in v1 (adds a pyarrow dependency for no user need yet).
 - Files and commands: `src/trial_results_tracker/export.py`, `render.py` (download links and licence line), `tests/test_export.py`.
 - Done when: merged on main with `mise run check` green, plus the deployed site links both files with the manifest, a test proves no `INDIV` sponsor name appears in either file, and every row carries the evidence basis and data date.
-- Blocked by decision: 7, 8, 12
+- Decided (was blocked by): 7, 8, 12
 
 ### T10. Curate a sponsor alias table seeded from ROR
 - Depends on: T9
 - Problem and direction: 44,409 distinct raw lead-sponsor strings exist and only 2,082 have 30 or more interventional trials (engineering.md, own measurement). Raw strings would split institutions such as "Uppsala Universitet" and "Uppsala University" ([CTIS preprint](https://doi.org/10.64898/2026.04.03.26350111)). Add `sponsors/aliases.csv`, committed and reviewable, with columns `sponsor_raw, sponsor_id, ror_id, match_method, reviewed_by, reviewed_on`. A script `mise run sponsors:seed` proposes ROR matches using only `chosen: true` ([ROR matching](https://ror.readme.io/docs/matching); ROR data CC0, [FAQ](https://ror.org/about/faqs/)) for raw strings above the D6 threshold. Proposals land unreviewed, and only reviewed rows are used. Do not roll up parents and children (D6). Rejected: trusting ROR scores (ROR advises against it) and the EU tracker's private spreadsheet (not reviewable).
 - Files and commands: `sponsors/aliases.csv`, `src/trial_results_tracker/sponsors.py` (pure lookup), `scripts` entry in `__main__.py` (`sponsors-seed`), `mise.toml` task, `tests/test_sponsors.py`.
 - Done when: merged on main with `mise run check` green, plus every sponsor above the ranking threshold has a reviewed row, `match_method` is set on every row, and an unreviewed row is provably ignored by a test.
-- Blocked by decision: 6
+- Decided (was blocked by): 6
 
 ### T11. Draw and score a validation sample
 - Depends on: T6
 - Problem and direction: Naming institutions needs measured accuracy. TranspariMED found errors in at least 9 of 38 trials at one sponsor ([TranspariMED](https://www.transparimed.org/single-post/metascience-fail-four-lessons-from-inaccurate-data-on-missing-clinical-trial-results)). Add `validate sample` to draw a seeded, stratified random sample per category (size per D14) into a coding CSV with a link to each live registry page. Add `validate score` to read the coders' CSVs and compute per-category agreement with Wilson CIs and inter-coder agreement. Results go in `docs/validation/<method>-<snapshot>.md` and are linked from the methodology page. The coding happens outside the repo; only the sample definition and the scores are committed.
 - Files and commands: `src/trial_results_tracker/validate.py`, `docs/validation/`, `tests/test_validate.py` (seeded sampling is deterministic; scoring on a toy table).
 - Done when: merged on main with `mise run check` green, plus the same seed and snapshot reproduce the same sample, and one completed two-coder round for v1.0 is published with per-category agreement.
-- Blocked by decision: 14
+- Decided (was blocked by): 14
 
 ### T12. Publish the named sponsor league table, sponsor pages and corrections process
 - Depends on: T7, T10, T11
@@ -157,18 +159,18 @@ Built from the six notes in `docs/research/` (data-sources, methodology, landsca
   Also add a methods line that points legal-compliance readers to the Bennett trackers ([FDAAA](https://fdaaa.trialstracker.net/), [EU](https://eu.trialstracker.net/)). Rejected: pages for all 44k raw strings (they exceed Cloudflare's 20k-file limit, [limits](https://developers.cloudflare.com/pages/platform/limits/)) and roll-ups.
 - Files and commands: `render.py`, `site/templates/sponsor.html`, `CORRECTIONS.md`, `.github/ISSUE_TEMPLATE/correction.yml`, `tests/test_render_sponsors.py`.
 - Done when: merged on main with `mise run check` green, plus the lawyer consult is recorded as done in `docs/` (date only, no advice text), the T11 validation for this method version is linked, the deployed league table shows only sponsors above threshold with CIs, and no `INDIV` sponsor appears.
-- Blocked by decision: 6, 7, 11
+- Decided (was blocked by): 6, 7, 11
 
 ### T13. Add a US "probable ACT" legal-duty column
 - Depends on: T9
 - Problem and direction: The legal-duty axis exists but always reads "not determined" (AGENTS.md rule 2). Infer "probable ACT" from `isFdaRegulatedDrug`/`isFdaRegulatedDevice`, phase, study type and dates, following 42 CFR 11.10's definition ([11.10](https://www.law.cornell.edu/cfr/text/42/11.10)) and the FDAAA tracker's MIT code ([repo](https://github.com/ebmdatalab/clinicaltrials-act-tracker)). Its current pACT logic has not been re-checked against 11.10 (critique.md gap 12); do that check as part of this task. Certified delays (`dispFirstSubmitDate`) are not yet due, up to the 11.44(b)/(c) backstop ([11.44](https://www.law.cornell.edu/cfr/text/42/11.44)). Label the column "appears overdue under FDAAA, absent an unpublished extension". The only "violation" wording allowed is a quote of CT.gov's `fdaaa801Violation` flag, attributed to FDA. Add static notes that UK duties start for trials ending on or after 28 Apr 2026 ([SI 2025/538](https://www.legislation.gov.uk/uksi/2025/538/made)) and that EU dates need CTIS. Never merge this column into the WHO categories.
 - Files and commands: `src/trial_results_tracker/legal_us.py` (pure), `export.py`, `render.py`, `tests/test_legal_us.py`.
 - Done when: merged on main with `mise run check` green, plus each 11.10 criterion has a test, the WHO category of every trial is unchanged by this task (asserted on the fixture snapshot), and the site's wording contains no "breach" or "illegal".
-- Blocked by decision: 15
+- Decided (was blocked by): 15
 
 ### T14. Add a "possible publication" secondary measure
 - Depends on: T9
 - Problem and direction: Registry-only counts miss results published in journals ([TranspariMED](https://www.transparimed.org/single-post/metascience-fail-four-lessons-from-inaccurate-data-on-missing-clinical-trial-results); Nilsonne et al. found more reporting once publications were searched, [JCE 2025](https://doi.org/10.1016/j.jclinepi.2025.111710)). Per D13, link due-not-reported trials to candidate publications by exact NCT-ID mention in PubMed/Europe PMC metadata, and cache the results in the release as `publications.csv.gz` with method and query date. Show "possible publication found" per trial and as a separate share. It never changes the registry headline (the WHO standard is registry posting). Rejected for this task: TrialScout in the headline (specificity 81.2% means false positives, [JCE 2026](https://doi.org/10.1016/j.jclinepi.2026.112484)) and Trials to Publications (no documented API; licence **[unverified]**, [PMC9006700](https://pmc.ncbi.nlm.nih.gov/articles/9006700)).
 - Files and commands: `src/trial_results_tracker/publications.py`, `fetch` extension or a `link-publications` subcommand, `refresh.yml` step, `export.py`, `tests/test_publications.py` (recorded fixtures, no network).
 - Done when: merged on main with `mise run check` green, plus the headline numbers are byte-identical with and without the publications file (asserted by a test), every link carries its method and query date, and the site states the evidence basis ("registry plus NCT-ID publication search") wherever the secondary measure appears.
-- Blocked by decision: 13
+- Decided (was blocked by): 13
