@@ -73,8 +73,9 @@ $crosswalk_rows
     <p>The data were requested from the ClinicalTrials.gov API $api_version, interventional studies only,
       with only the fields needed for classification; no investigator, official or contact fields are fetched.
       No record is edited. The changes made are: dates given as a month or a year are stored as the last
-      day of that period (then read as above); each trial is assigned one category by the rules above; and
-      only counts per category are published. The raw snapshot, its manifest and the code are public:
+      day of that period (then read as above); each trial is assigned one category by the rules above (and one by
+      methodology v1.0, in the downloads); and only counts per category, plus the per-trial and per-sponsor
+      downloads linked from the overview, are published. The raw snapshot, its manifest and the code are public:
       snapshot <a href="$release_url">$tag</a> ($rows_written records, fetched by code
       <code>$fetch_sha_short</code>), rendered by code
       <a href="https://github.com/morris-frank/trial-results-tracker/commit/$code_sha"><code>$code_sha_short</code></a>.</p>
