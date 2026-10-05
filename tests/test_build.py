@@ -69,6 +69,14 @@ def test_footer_names_publisher_credits_registry_and_disclaims_soilytix(site):
         assert "not affiliated with Soilytix" in text
 
 
+def test_overview_links_downloads_manifest_and_licence(site):
+    index = (site / "index.html").read_text()
+    for name in ("trials.csv.gz", "sponsors.csv", "manifest.json"):
+        assert f'href="{name}"' in index
+        assert (site / name).exists()
+    assert "CC BY 4.0" in index
+
+
 def test_output_has_no_script(site):
     assert "<script" not in pages(site).lower()
 

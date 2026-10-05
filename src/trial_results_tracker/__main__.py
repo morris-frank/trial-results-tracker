@@ -10,14 +10,20 @@ from pathlib import Path
 from trial_results_tracker import snapshot, validate
 from trial_results_tracker.classify import KEESTRA_2021, V1_0, classify
 from trial_results_tracker.crosswalk import crosswalk
+from trial_results_tracker.export import LICENCE, LICENCE_URL, export
 from trial_results_tracker.fetch import code_sha, fetch
 from trial_results_tracker.parse import parse
 from trial_results_tracker.render import headline, render
 
 SNAPSHOT = Path(__file__).resolve().parents[2] / "SNAPSHOT"
+NAMED = "Organisations are named in the downloads; individual sponsors are pooled unnamed."
+UNNAMED = (
+    "Sponsor names are withheld until the naming gate is passed: sponsors are counted by"
+    " sponsor class, with individual sponsors pooled."
+)
 
 
-def build(out: Path, snapshot_dir: Path | None = None) -> None:
+def build(out: Path, snapshot_dir: Path | None = None, name_sponsors: bool = False) -> None:
     """Classify the pinned snapshot (or a local one) and render the site into `out`."""
     with tempfile.TemporaryDirectory() as scratch:
         directory = snapshot_dir or snapshot.download(SNAPSHOT.read_text().strip(), Path(scratch))
@@ -30,6 +36,8 @@ def build(out: Path, snapshot_dir: Path | None = None) -> None:
     counts = Counter(classify(trial, as_of, V1_0) for trial in trials)
     # Vercel's Git build has no .git directory but exposes the commit.
     sha = os.environ.get("VERCEL_GIT_COMMIT_SHA") or code_sha()
+    meta = {"dataTimestamp": manifest["dataTimestamp"], "codeSha": sha, "snapshot": tag}
+    export(out, trials, as_of, meta, name_sponsors)
     render(
         out,
         counts,
@@ -45,6 +53,9 @@ def build(out: Path, snapshot_dir: Path | None = None) -> None:
             "release_url": f"https://github.com/morris-frank/trial-results-tracker/releases/tag/{tag}",
             "code_sha": sha,
             "code_sha_short": sha[:12],
+            "licence": LICENCE,
+            "licence_url": LICENCE_URL,
+            "sponsor_note": NAMED if name_sponsors else UNNAMED,
         },
         headline(counts, V1_0.name, data_date),
     )
@@ -108,7 +119,8 @@ def main(argv: list[str] | None = None) -> None:
     score_cmd.add_argument("coder_b", type=Path)
     args = parser.parse_args(argv)
     if args.command == "build":
-        build(args.out, args.snapshot_dir)
+        # NAME_SPONSORS=1 publishes organisation names in the downloads; off until D7's gate.
+        build(args.out, args.snapshot_dir, os.environ.get("NAME_SPONSORS") == "1")
     elif args.command == "fetch":
         print(fetch(args.out))
     elif args.step == "sample":
