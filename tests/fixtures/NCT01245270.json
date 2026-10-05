@@ -1,0 +1,50 @@
+{
+    "protocolSection": {
+        "identificationModule": {
+            "nctId": "NCT01245270"
+        },
+        "statusModule": {
+            "statusVerifiedDate": "2021-02",
+            "overallStatus": "COMPLETED",
+            "startDateStruct": {
+                "date": "2010-09"
+            },
+            "primaryCompletionDateStruct": {
+                "date": "2013-08",
+                "type": "ACTUAL"
+            },
+            "completionDateStruct": {
+                "date": "2013-08",
+                "type": "ACTUAL"
+            },
+            "resultsFirstSubmitDate": "2013-08-23",
+            "resultsFirstSubmitQcDate": "2014-08-13",
+            "resultsFirstPostDateStruct": {
+                "date": "2014-08-15",
+                "type": "ESTIMATED"
+            },
+            "lastUpdatePostDateStruct": {
+                "date": "2021-03-10",
+                "type": "ACTUAL"
+            }
+        },
+        "sponsorCollaboratorsModule": {
+            "responsibleParty": {
+                "type": "SPONSOR"
+            },
+            "leadSponsor": {
+                "name": "University of Aberdeen",
+                "class": "OTHER"
+            }
+        },
+        "oversightModule": {},
+        "designModule": {
+            "studyType": "INTERVENTIONAL",
+            "enrollmentInfo": {
+                "count": 8,
+                "type": "ACTUAL"
+            }
+        }
+    },
+    "hasResults": true
+}
