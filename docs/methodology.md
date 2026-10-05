@@ -61,3 +61,7 @@ Stale registry status is not non-reporting (AGENTS.md rule 3). How the headline 
 ## Not decided here
 
 Which categories enter the headline and the upper bound is fixed in T7 (D5). Sponsor attribution, grouping and naming wait for D6–D8 and the naming gate.
+
+## Validation
+
+Two coders classify a seeded, stratified sample of 200 trials by hand (D14, plan task T11); `validate sample` and `validate score` in `src/trial_results_tracker/validate.py` draw and score it. Results per method and snapshot are in `docs/validation/`: [v1.0 on data-2026-10-05](validation/v1.0-data-2026-10-05.md) (sample drawn, coding pending).
