@@ -1,8 +1,11 @@
 """One test per v1.0 rule; each names the docs/plan.md decision it implements."""
 
+import copy
+import json
 from collections import Counter
 from dataclasses import replace
 from datetime import date, timedelta
+from pathlib import Path
 
 import pytest
 
@@ -19,8 +22,14 @@ from trial_results_tracker.model import (
     UnpostedEventType,
     Unrecognised,
 )
+from trial_results_tracker.parse import parse
 
 AS_OF = date(2026, 10, 5)
+FIXTURES = Path(__file__).parent / "fixtures"
+
+
+def load(nct_id):
+    return json.loads((FIXTURES / f"{nct_id}.json").read_text())
 
 
 def ago(days, type=DateType.ACTUAL):
@@ -53,6 +62,7 @@ def trial(status, pcd=None, submitted=None, **fields):
         is_fda_regulated_device=None,
         fdaaa801_violation=None,
         unrecognised=(),
+        results_submitted=submitted,
     )
     return replace(t, **fields)
 
@@ -102,6 +112,29 @@ def test_d1_reset_but_later_posted_is_reported():
         latest_unposted_event=reset,
     )
     assert v1(t) is Category.DUE_REPORTED_IN_TIME
+
+
+# Recorded 2026-10-05 from /api/v2/studies/<id> with fetch.FIELDS; neither has
+# resultsFirstSubmitDate. NCT02582203: COMPLETED, PCD 2016-05, RELEASE then RESET.
+# NCT01545440: COMPLETED, PCD 2013-03, RELEASE then an undated UNRELEASE.
+RETURNED = load("NCT02582203")
+UNRELEASED = load("NCT01545440")
+
+
+def test_d1_reset_with_nothing_posted_is_returned_in_qc_on_a_real_record():
+    assert v1(parse(RETURNED)) is Category.DUE_RETURNED_IN_QC
+
+
+def test_d1_pending_release_counts_by_its_derived_submit_date():
+    # NCT02582203 before its RESET: submitted 2025-03-24, over 395 d after PCD.
+    record = copy.deepcopy(RETURNED)
+    events = record["annotationSection"]["annotationModule"]["unpostedAnnotation"]
+    events["unpostedEvents"].pop()
+    assert v1(parse(record)) is Category.DUE_REPORTED_LATE
+
+
+def test_d1_unreleased_submission_is_not_reported():
+    assert v1(parse(UNRELEASED)) is Category.DUE_NOT_REPORTED
 
 
 def test_d2_due_only_after_more_than_395_days():

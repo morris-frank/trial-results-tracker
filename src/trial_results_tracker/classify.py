@@ -139,8 +139,15 @@ def _v1_0(trial: Trial, as_of: date) -> Category:
         return Category.INCONSISTENT
     if days_since_pcd <= _V1_THRESHOLD:  # D2
         return Category.COMPLETED_NOT_DUE
-    submitted = trial.results_first_submitted  # D1
+    submitted = trial.results_submitted  # D1
     if submitted is None:
+        return Category.DUE_NOT_REPORTED
+    # A submission derived from unposted events that the sponsor then withdrew is no
+    # submission. The registry lists events in order; the last may be undated.
+    if (
+        trial.results_first_submitted is None
+        and trial.unposted_events[-1].type is UnpostedEventType.UNRELEASE
+    ):  # D1
         return Category.DUE_NOT_REPORTED
     latest = trial.latest_unposted_event
     if (

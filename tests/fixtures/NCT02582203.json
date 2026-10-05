@@ -1,0 +1,96 @@
+{
+    "protocolSection": {
+        "identificationModule": {
+            "nctId": "NCT02582203"
+        },
+        "statusModule": {
+            "statusVerifiedDate": "2016-10",
+            "overallStatus": "COMPLETED",
+            "startDateStruct": {
+                "date": "2012-02"
+            },
+            "primaryCompletionDateStruct": {
+                "date": "2016-05",
+                "type": "ACTUAL"
+            },
+            "completionDateStruct": {
+                "date": "2016-05",
+                "type": "ACTUAL"
+            },
+            "lastUpdatePostDateStruct": {
+                "date": "2016-11-01",
+                "type": "ESTIMATED"
+            }
+        },
+        "sponsorCollaboratorsModule": {
+            "responsibleParty": {
+                "type": "PRINCIPAL_INVESTIGATOR"
+            },
+            "leadSponsor": {
+                "name": "Wayne State University",
+                "class": "OTHER"
+            },
+            "collaborators": [
+                {
+                    "name": "Henry Ford Hospital",
+                    "class": "OTHER"
+                },
+                {
+                    "name": "St. John Providence Health System",
+                    "class": "OTHER"
+                },
+                {
+                    "name": "Detroit Medical Center",
+                    "class": "OTHER"
+                },
+                {
+                    "name": "Forest Laboratories",
+                    "class": "INDUSTRY"
+                }
+            ]
+        },
+        "designModule": {
+            "studyType": "INTERVENTIONAL",
+            "phases": [
+                "PHASE4"
+            ],
+            "designInfo": {
+                "primaryPurpose": "TREATMENT"
+            },
+            "enrollmentInfo": {
+                "count": 174,
+                "type": "ACTUAL"
+            }
+        },
+        "contactsLocationsModule": {
+            "locations": [
+                {
+                    "country": "United States"
+                },
+                {
+                    "country": "United States"
+                },
+                {
+                    "country": "United States"
+                }
+            ]
+        }
+    },
+    "annotationSection": {
+        "annotationModule": {
+            "unpostedAnnotation": {
+                "unpostedEvents": [
+                    {
+                        "type": "RELEASE",
+                        "date": "2025-03-24"
+                    },
+                    {
+                        "type": "RESET",
+                        "date": "2025-04-10"
+                    }
+                ]
+            }
+        }
+    },
+    "hasResults": false
+}

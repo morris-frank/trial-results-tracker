@@ -137,3 +137,21 @@ def test_undated_unposted_event_is_kept_but_never_latest():
     trial = parse(record)
     assert trial.unposted_events[-1] == UnpostedEvent(UnpostedEventType.UNRELEASE, None)
     assert trial.latest_unposted_event.type is UnpostedEventType.RESET
+
+
+def test_submission_without_submit_date_is_the_earliest_unposted_event():
+    # D1: the registry sets resultsFirstSubmitDate only once results post (PR #11).
+    trial = parse(RESET_TWICE)
+    assert trial.results_first_submitted is None
+    assert trial.results_submitted == RegistryDate(date(2020, 2, 13), Precision.DAY, None)
+
+
+def test_submit_date_wins_over_unposted_events():
+    record = with_status(RESET_TWICE, resultsFirstSubmitDate="2019-06-01")
+    assert parse(record).results_submitted.value == date(2019, 6, 1)
+
+
+def test_no_submit_date_and_no_unposted_events_is_not_submitted():
+    record = copy.deepcopy(GAP)
+    del record["protocolSection"]["statusModule"]["resultsFirstSubmitDate"]
+    assert parse(record).results_submitted is None
