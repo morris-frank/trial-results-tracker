@@ -68,9 +68,10 @@ def test_every_row_carries_evidence_basis_and_data_date(files):
             assert row["data_date"] == "2026-10-02"
 
 
-def test_legal_duty_is_not_determined_and_separate_from_category(files):
+def test_legal_duty_is_its_own_column_and_separate_from_category(files):
     for row in rows(files[0]):
-        assert row["legal_duty"] == "not determined"
+        assert row["legal_duty"] == "not determined"  # the fixture trials predate 2017
+        assert row["fda_flag"] == ""
         assert row["category_keestra_2021"] and row["category_v1_0"]
 
 
@@ -105,4 +106,4 @@ def test_manifest_records_method_data_timestamp_code_and_licence(files):
     assert manifest["codeSha"] == "abc123"
     assert manifest["licence"] == "CC BY 4.0"
     assert manifest["evidenceBasis"] == "registry only"
-    assert manifest["legalDuty"] == "not determined"
+    assert manifest["legalDuty"].startswith("US: probable ACT under 42 CFR 11.10")
