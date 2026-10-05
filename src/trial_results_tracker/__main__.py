@@ -50,9 +50,7 @@ def build(out: Path, snapshot_dir: Path | None = None, name_sponsors: bool = Fal
     # Vercel's Git build has no .git directory but exposes the commit.
     sha = os.environ.get("VERCEL_GIT_COMMIT_SHA") or code_sha()
     meta = {"dataTimestamp": manifest["dataTimestamp"], "codeSha": sha, "snapshot": tag}
-    export(
-        out, trials, as_of, meta, name_sponsors, sponsors.lookup(ALIASES.read_text()), links
-    )
+    export(out, trials, as_of, meta, name_sponsors, sponsors.lookup(ALIASES.read_text()), links)
     render(
         out,
         counts,
