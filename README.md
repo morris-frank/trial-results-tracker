@@ -64,18 +64,30 @@ mise run build   # static site into dist/
 
 ## Configuration
 
-No variables are configured yet. `.env.example` lists every variable as tasks add them.
+`.env.example` lists every variable. The build needs none; `TELEGRAM_BOT_TOKEN` and
+`TELEGRAM_CHAT_ID` (a dedicated bot, not mario's) are only for the refresh report, set
+as repository secrets for CI and in `.env` for `mise run notify`, which sends a test
+report built from `data/raw/` if present.
 
 Snapshots: raw registry data is never committed. The `Refresh` workflow
-(`.github/workflows/refresh.yml`, manual dispatch only) runs `mise run fetch`, then
+(`.github/workflows/refresh.yml`, weekly on Mondays at 04:00 UTC, or by manual
+dispatch) runs `mise run fetch`, then
 `mise run snapshot`, which publishes `data/raw/` as GitHub Release `data-<YYYY-MM-DD>`
 with the `.jsonl.gz` and `manifest.json` as assets, and commits the tag to the one-line
 `SNAPSHOT` file on `main`. A release is never overwritten: if that day's release exists,
 `mise run snapshot` exits non-zero without changing anything. Running it locally needs
-`gh` authenticated with write access to the repository.
+`gh` authenticated with write access to the repository. Every run, pass or fail, ends
+with a Telegram message: rows, v1.0 category deltas (the headline's method) against the previously
+pinned release, the release URL and the job status.
+
+GitHub disables a scheduled workflow after 60 days without repository activity
+([docs](https://docs.github.com/en/actions/managing-workflow-runs-and-deployments/managing-workflow-runs/disabling-and-enabling-a-workflow)).
+The weekly pin commit is meant to count as that activity, but whether a commit made
+with `GITHUB_TOKEN` counts is **[unverified]**; if the weekly report stops arriving,
+re-enable the workflow in the Actions tab.
 
 Deployment: Vercel builds `vercel.json`'s command on every push to `main` and serves
-`dist/`. The build downloads the pinned release over public HTTPS (no token) and fails if
+`dist/`, so the refresh's pin commit is what deploys new data. The build downloads the pinned release over public HTTPS (no token) and fails if
 the download fails or the row count differs from the manifest; `build --snapshot-dir DIR`
 uses a local snapshot instead.
 

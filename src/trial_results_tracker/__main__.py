@@ -1,10 +1,11 @@
-"""Command line entrypoint. `fetch` pulls a dated registry snapshot; `build` writes the site."""
+"""Command line entrypoint: `fetch` a registry snapshot, `build` the site, `notify` Telegram."""
 
 import argparse
 import csv
 import json
 import os
 import shutil
+import sys
 import tempfile
 from collections import Counter
 from datetime import date
@@ -12,7 +13,7 @@ from pathlib import Path
 from urllib.parse import quote
 from urllib.request import urlopen
 
-from trial_results_tracker import legal_us, publications, snapshot, sponsors, validate
+from trial_results_tracker import legal_us, notify, publications, snapshot, sponsors, validate
 from trial_results_tracker.classify import KEESTRA_2021, V1_0, Category, classify
 from trial_results_tracker.crosswalk import crosswalk
 from trial_results_tracker.export import LICENCE, LICENCE_URL, export
@@ -29,6 +30,21 @@ UNNAMED = (
     "Sponsor names are withheld until the naming gate is passed: sponsors are counted by"
     " sponsor class, with individual sponsors pooled."
 )
+
+
+def summarise(directory: Path, categorise: bool = True) -> notify.Summary:
+    """Tag, data date, rows and (optionally) v1.0 counts of a snapshot, as the headline counts."""
+    manifest = snapshot.manifest(directory)
+    # The release tag the snapshot task gave this file, so a local override is labelled too.
+    tag = "data-" + manifest["file"].removeprefix("ctgov-").removesuffix(".jsonl.gz")
+    data_date = manifest["dataTimestamp"][:10]
+    counts = None
+    if categorise:
+        as_of = date.fromisoformat(data_date)
+        counts = Counter(
+            classify(parse(record), as_of, V1_0) for record in snapshot.records(directory)
+        )
+    return notify.Summary(tag, data_date, manifest["rowsWritten"], counts)
 
 
 def build(out: Path, snapshot_dir: Path | None = None, name_sponsors: bool = False) -> None:
@@ -143,6 +159,24 @@ def sponsors_seed(table: Path, snapshot_dir: Path | None) -> int:
     return len(rows) - len(known)
 
 
+def report(status: str, run_url: str, previous_tag: str, snapshot_dir: Path) -> None:
+    """Send the run's Telegram message; deltas only for a successful run with a fresh snapshot."""
+    ok = status == "success"
+    current = previous = None
+    # fetch writes the manifest last, so it exists only after a complete pull.
+    if (snapshot_dir / "manifest.json").exists():
+        current = summarise(snapshot_dir, categorise=ok)
+    if ok and current:
+        with tempfile.TemporaryDirectory() as scratch:
+            try:
+                previous = summarise(snapshot.download(previous_tag, Path(scratch)))
+            except OSError as error:  # the report still goes out, saying there is no comparison
+                print(f"previous snapshot {previous_tag} unavailable: {error}", file=sys.stderr)
+    text = notify.message(status, run_url, V1_0.name, current, previous)
+    print(text)
+    notify.send(os.environ["TELEGRAM_BOT_TOKEN"], os.environ["TELEGRAM_CHAT_ID"], text)
+
+
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(prog="trial-results-tracker")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -167,6 +201,11 @@ def main(argv: list[str] | None = None) -> None:
     seed_cmd = sub.add_parser("sponsors-seed", help="propose ROR matches into the alias table")
     seed_cmd.add_argument("--table", type=Path, default=ALIASES)
     seed_cmd.add_argument("--snapshot-dir", type=Path)
+    notify_cmd = sub.add_parser("notify", help="report a refresh run to Telegram")
+    notify_cmd.add_argument("--status", required=True, help="the job status, e.g. success")
+    notify_cmd.add_argument("--run-url", default="(local run)")
+    notify_cmd.add_argument("--previous", required=True, help="the tag pinned before this run")
+    notify_cmd.add_argument("--snapshot-dir", type=Path, default=Path("data/raw"))
     args = parser.parse_args(argv)
     if args.command == "build":
         # NAME_SPONSORS=1 publishes organisation names in the downloads, the league table and
@@ -177,6 +216,8 @@ def main(argv: list[str] | None = None) -> None:
         print(publications.link_snapshot(args.out))
     elif args.command == "sponsors-seed":
         print(f"{sponsors_seed(args.table, args.snapshot_dir)} unreviewed proposals added")
+    elif args.command == "notify":
+        report(args.status, args.run_url, args.previous, args.snapshot_dir)
     elif args.step == "sample":
         validate_sample(args.out, args.snapshot_dir, args.seed, args.size)
     else:

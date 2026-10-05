@@ -97,3 +97,7 @@ echo "$tag" > SNAPSHOT
 [tasks."sponsors:seed"]
 description = "Propose ROR matches (chosen: true only) into sponsors/aliases.csv, unreviewed, for sponsors above the D6 threshold"
 run = "uv run --frozen python -m trial_results_tracker sponsors-seed"
+
+[tasks.notify]
+description = "Send a test refresh report to Telegram (needs TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID in .env)"
+run = 'uv run --frozen python -m trial_results_tracker notify --status success --previous "$(cat SNAPSHOT)"'
