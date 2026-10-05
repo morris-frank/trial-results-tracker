@@ -117,7 +117,7 @@ def sponsors_seed(table: Path, snapshot_dir: Path | None) -> int:
                 rows.append(sponsors.propose(raw, json.load(response)["items"]))
     table.parent.mkdir(parents=True, exist_ok=True)
     with table.open("w", encoding="utf-8", newline="") as f:
-        writer = csv.writer(f)
+        writer = csv.writer(f, lineterminator="\n")  # LF, as git stores the table
         writer.writerow(sponsors.COLUMNS)
         writer.writerows(sorted(rows))
     return len(rows) - len(known)
