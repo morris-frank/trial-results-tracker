@@ -27,6 +27,7 @@ V1_CATEGORIES = [c for c in Category if c is not Category.DUE_AND_REPORTED]  # K
 TRIAL_COLUMNS = (
     "nct_id",
     "sponsor_raw",
+    "sponsor_id",
     "sponsor_class",
     "category_keestra_2021",
     "category_v1_0",
@@ -62,11 +63,17 @@ def _date(registry_date: RegistryDate | None) -> str:
 
 
 def export(
-    out: Path, trials: Iterable[Trial], as_of: date, meta: dict[str, str], name_sponsors: bool
+    out: Path,
+    trials: Iterable[Trial],
+    as_of: date,
+    meta: dict[str, str],
+    name_sponsors: bool,
+    sponsor_ids: dict[str, str] | None = None,
 ) -> None:
     """Write trials.csv.gz, sponsors.csv and manifest.json into `out`.
 
-    `meta` holds `dataTimestamp`, `codeSha` and `snapshot` (the release tag)."""
+    `meta` holds `dataTimestamp`, `codeSha` and `snapshot` (the release tag);
+    `sponsor_ids` maps raw strings to reviewed alias-table IDs (sponsors.lookup)."""
     data_date = meta["dataTimestamp"][:10]
     sponsors: dict[str, Counter[Category]] = {}
     out.mkdir(parents=True, exist_ok=True)
@@ -87,6 +94,7 @@ def export(
                 (
                     trial.nct_id,
                     sponsor if name_sponsors else "",
+                    (sponsor_ids or {}).get(sponsor, "") if name_sponsors else "",
                     _text(trial.sponsor_class),
                     classify(trial, as_of, KEESTRA_2021),
                     v1,

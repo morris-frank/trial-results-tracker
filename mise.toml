@@ -91,3 +91,7 @@ gh release create "$tag" "data/raw/$file" data/raw/manifest.json \
   --notes "ClinicalTrials.gov API $(field apiVersion), data timestamp $(field dataTimestamp): $(field rowsWritten) interventional studies, fetched by code $(field codeSha)."
 echo "$tag" > SNAPSHOT
 '''
+
+[tasks."sponsors:seed"]
+description = "Propose ROR matches (chosen: true only) into sponsors/aliases.csv, unreviewed, for sponsors above the D6 threshold"
+run = "uv run --frozen python -m trial_results_tracker sponsors-seed"
