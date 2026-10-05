@@ -7,7 +7,7 @@ from collections import Counter
 from datetime import date
 from pathlib import Path
 
-from trial_results_tracker import snapshot
+from trial_results_tracker import snapshot, validate
 from trial_results_tracker.classify import KEESTRA_2021, V1_0, classify
 from trial_results_tracker.crosswalk import crosswalk
 from trial_results_tracker.fetch import code_sha, fetch
@@ -50,6 +50,41 @@ def build(out: Path, snapshot_dir: Path | None = None) -> None:
     )
 
 
+def validate_sample(out: Path, snapshot_dir: Path | None, seed: int | None, size: int) -> None:
+    """Draw the v1.0 validation sample from the pinned snapshot into `out`."""
+    with tempfile.TemporaryDirectory() as scratch:
+        directory = snapshot_dir or snapshot.download(SNAPSHOT.read_text().strip(), Path(scratch))
+        manifest = snapshot.manifest(directory)
+        tag = "data-" + manifest["file"].removeprefix("ctgov-").removesuffix(".jsonl.gz")
+        data_date = manifest["dataTimestamp"][:10]
+        as_of = date.fromisoformat(data_date)
+        categories = {}
+        for record in snapshot.records(directory):
+            trial = parse(record)
+            categories[trial.nct_id] = classify(trial, as_of, V1_0)
+    seed = validate.default_seed(V1_0.name, tag) if seed is None else seed
+    sample = validate.draw(categories, size, seed)
+    stem = out / f"{V1_0.name}-{tag}"
+    validate.write_sample(stem, sample, seed)
+    meta = {
+        "method": V1_0.name,
+        "tag": tag,
+        "release_url": f"https://github.com/morris-frank/trial-results-tracker/releases/tag/{tag}",
+        "data_date": data_date,
+        "code_sha": code_sha(),
+        "seed": str(seed),
+    }
+    Path(f"{stem}.md").write_text(validate.report(meta, dict(sample)))
+
+
+def validate_score(sample: Path, coder_a: Path, coder_b: Path) -> None:
+    """Score two coders' sheets against the sample key into the sample's report page."""
+    key = validate.read_coding(sample)
+    result = validate.score(key, validate.read_coding(coder_a), validate.read_coding(coder_b))
+    page = Path(str(sample).removesuffix("-sample.csv") + ".md")
+    page.write_text(validate.scored(page.read_text(), result))
+
+
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(prog="trial-results-tracker")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -60,11 +95,26 @@ def main(argv: list[str] | None = None) -> None:
     )
     fetch_cmd = sub.add_parser("fetch", help="pull a dated ClinicalTrials.gov snapshot")
     fetch_cmd.add_argument("--out", type=Path, default=Path("data/raw"))
+    validate_cmd = sub.add_parser("validate", help="draw or score a validation sample")
+    validate_sub = validate_cmd.add_subparsers(dest="step", required=True)
+    sample_cmd = validate_sub.add_parser("sample", help="draw the v1.0 sample and coding sheet")
+    sample_cmd.add_argument("--out", type=Path, default=Path("docs/validation"))
+    sample_cmd.add_argument("--snapshot-dir", type=Path)
+    sample_cmd.add_argument("--seed", type=int, help="default: derived from method and snapshot")
+    sample_cmd.add_argument("--size", type=int, default=validate.SIZE)
+    score_cmd = validate_sub.add_parser("score", help="score two coders against the sample")
+    score_cmd.add_argument("sample", type=Path, help="the <method>-<snapshot>-sample.csv key")
+    score_cmd.add_argument("coder_a", type=Path)
+    score_cmd.add_argument("coder_b", type=Path)
     args = parser.parse_args(argv)
     if args.command == "build":
         build(args.out, args.snapshot_dir)
     elif args.command == "fetch":
         print(fetch(args.out))
+    elif args.step == "sample":
+        validate_sample(args.out, args.snapshot_dir, args.seed, args.size)
+    else:
+        validate_score(args.sample, args.coder_a, args.coder_b)
 
 
 if __name__ == "__main__":
