@@ -16,6 +16,10 @@ from pathlib import Path
 from trial_results_tracker import legal_us
 from trial_results_tracker.classify import KEESTRA_2021, V1_0, Category, classify
 from trial_results_tracker.model import RegistryDate, ResponsiblePartyType, SponsorClass, Trial
+from trial_results_tracker.publications import EVIDENCE_BASIS as PUBLICATION_BASIS
+from trial_results_tracker.publications import FILE as PUBLICATIONS
+from trial_results_tracker.publications import METHOD as PUBLICATION_METHOD
+from trial_results_tracker.publications import Links
 
 INDIVIDUALS = "Individual sponsors (pooled)"
 EVIDENCE_BASIS = "registry only"
@@ -43,6 +47,9 @@ TRIAL_COLUMNS = (
     "data_date",
     "legal_duty",
     "fda_flag",
+    "possible_publication",
+    "possible_publication_basis",
+    "possible_publication_query_date",
 )
 
 
@@ -66,6 +73,14 @@ def _date(registry_date: RegistryDate | None) -> str:
     return registry_date.value.isoformat() if registry_date else ""
 
 
+def _publication(nct_id: str, links: Links | None) -> tuple[str, str, str]:
+    """T14: "found" or "none found" for a searched trial, blank for an unsearched one."""
+    if links is None or nct_id not in links.searched:
+        return "", "", ""
+    found = "found" if nct_id in links.found else "none found"
+    return found, PUBLICATION_BASIS, links.query_date
+
+
 def export(
     out: Path,
     trials: Iterable[Trial],
@@ -73,8 +88,10 @@ def export(
     meta: dict[str, str],
     name_sponsors: bool,
     sponsor_ids: dict[str, str] | None = None,
+    links: Links | None = None,
 ) -> None:
-    """Write trials.csv.gz, sponsors.csv and manifest.json into `out`.
+    """Write trials.csv.gz, sponsors.csv and manifest.json into `out`, plus the publication
+    links `links` were read from when there are any.
 
     `meta` holds `dataTimestamp`, `codeSha` and `snapshot` (the release tag);
     `sponsor_ids` maps raw strings to reviewed alias-table IDs (sponsors.lookup)."""
@@ -111,6 +128,7 @@ def export(
                     data_date,
                     legal_us.status(trial, as_of),
                     legal_us.fda_flag(trial),
+                    *_publication(trial.nct_id, links),
                 )
             )
     with (out / "sponsors.csv").open("w", encoding="utf-8", newline="") as f:
@@ -148,4 +166,12 @@ def export(
         "sponsorNames": name_sponsors,
         "files": ["trials.csv.gz", "sponsors.csv"],
     }
+    if links is not None:
+        manifest["files"].append(PUBLICATIONS)
+        manifest["possiblePublication"] = {
+            "evidenceBasis": PUBLICATION_BASIS,
+            "method": PUBLICATION_METHOD,
+            "queryDate": links.query_date,
+            "note": "a candidate match, never verified results; does not change any category",
+        }
     (out / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")

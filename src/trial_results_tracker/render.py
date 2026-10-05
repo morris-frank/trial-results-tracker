@@ -11,6 +11,8 @@ from string import Template
 
 from trial_results_tracker.classify import Category
 from trial_results_tracker.legal_us import LegalDuty
+from trial_results_tracker.publications import EVIDENCE_BASIS as PUBLICATION_BASIS
+from trial_results_tracker.publications import Links
 from trial_results_tracker.stats import wilson
 
 SITE = Path(__file__).resolve().parents[2] / "site"
@@ -96,6 +98,37 @@ def legal(counts: Counter[LegalDuty], flagged: int) -> str:
     )
 
 
+def publication_share(links: Links, unreported: set[str], data_date: str) -> str:
+    """T14's secondary measure, kept apart from the registry figures it never changes:
+    due-not-reported trials (`unreported`) with a possible publication in `links`."""
+    searched, found = links.searched & unreported, links.found & unreported
+    basis, query_date = escape(PUBLICATION_BASIS), escape(links.query_date)
+    if searched:
+        low, high = wilson(len(found), len(searched))
+        figure = (
+            f'<span class="n">{len(found):,}</span> of <span class="n">{len(searched):,}</span> due'
+            f' trials with no results submitted (<span class="n">{len(found) / len(searched):.1%}'
+            f'</span>, 95% CI <span class="n">{low:.1%}</span> to'
+            f' <span class="n">{high:.1%}</span>) have a possible publication found'
+        )
+    else:
+        figure = (
+            "No due trial with no results submitted was searched, so no possible publication found"
+        )
+    missed = len(unreported - searched)
+    gap = f" {missed:,} due trials with no results submitted were not searched." if missed else ""
+    return (
+        "    <h2>Possible publications</h2>\n"
+        f"    <p>Evidence basis: <strong>{basis}</strong>. {figure}: a Europe PMC record, which"
+        " includes PubMed, whose title or abstract names the trial's NCT ID, searched on"
+        f" {query_date} for registry data of {escape(data_date)}.{gap} A possible publication is"
+        " a candidate match, not checked to hold the trial's results, and it changes neither the"
+        " headline nor any registry count above: the WHO standard is results on the registry."
+        ' Every link, with its method and query date: <a href="publications.csv.gz">'
+        "publications.csv.gz</a>.</p>\n"
+    )
+
+
 def render(
     out: Path,
     counts: Counter[Category],
@@ -105,6 +138,7 @@ def render(
     context: dict[str, str],
     headline_html: str = "",
     legal_html: str = "",
+    publications_html: str = "",
 ) -> None:
     """Write index.html and methodology.html. `counts` are under `method`; `cross` is keyed by
     (`comparison` category, `method` category); `context` fills the templates' other fields."""
@@ -136,6 +170,7 @@ def render(
         "crosswalk_total": _number(f"{cross.total():,}", pair_method),
         "headline": headline_html,
         "legal": legal_html,
+        "publications": publications_html,
     }
     out.mkdir(parents=True, exist_ok=True)
     for asset in ("favicon.png", "style.css"):

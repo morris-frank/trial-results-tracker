@@ -4,6 +4,7 @@ import argparse
 import csv
 import json
 import os
+import shutil
 import tempfile
 from collections import Counter
 from datetime import date
@@ -11,13 +12,13 @@ from pathlib import Path
 from urllib.parse import quote
 from urllib.request import urlopen
 
-from trial_results_tracker import legal_us, snapshot, sponsors, validate
-from trial_results_tracker.classify import KEESTRA_2021, V1_0, classify
+from trial_results_tracker import legal_us, publications, snapshot, sponsors, validate
+from trial_results_tracker.classify import KEESTRA_2021, V1_0, Category, classify
 from trial_results_tracker.crosswalk import crosswalk
 from trial_results_tracker.export import LICENCE, LICENCE_URL, export
 from trial_results_tracker.fetch import code_sha, fetch
 from trial_results_tracker.parse import parse
-from trial_results_tracker.render import headline, legal, render
+from trial_results_tracker.render import headline, legal, publication_share, render
 
 SNAPSHOT = Path(__file__).resolve().parents[2] / "SNAPSHOT"
 ALIASES = Path(__file__).resolve().parents[2] / "sponsors" / "aliases.csv"
@@ -39,11 +40,19 @@ def build(out: Path, snapshot_dir: Path | None = None, name_sponsors: bool = Fal
         data_date = manifest["dataTimestamp"][:10]
         as_of = date.fromisoformat(data_date)
         trials = [parse(record) for record in snapshot.records(directory)]
+        links = None
+        if "publications" in manifest:  # T14; published beside the downloads
+            links = publications.read(directory / manifest["publications"])
+            out.mkdir(parents=True, exist_ok=True)
+            shutil.copy(directory / manifest["publications"], out / publications.FILE)
     counts = Counter(classify(trial, as_of, V1_0) for trial in trials)
+    unreported = {t.nct_id for t in trials if classify(t, as_of, V1_0) is Category.DUE_NOT_REPORTED}
     # Vercel's Git build has no .git directory but exposes the commit.
     sha = os.environ.get("VERCEL_GIT_COMMIT_SHA") or code_sha()
     meta = {"dataTimestamp": manifest["dataTimestamp"], "codeSha": sha, "snapshot": tag}
-    export(out, trials, as_of, meta, name_sponsors, sponsors.lookup(ALIASES.read_text()))
+    export(
+        out, trials, as_of, meta, name_sponsors, sponsors.lookup(ALIASES.read_text()), links
+    )
     render(
         out,
         counts,
@@ -68,6 +77,7 @@ def build(out: Path, snapshot_dir: Path | None = None, name_sponsors: bool = Fal
             Counter(legal_us.status(trial, as_of) for trial in trials),
             sum(bool(trial.fdaaa801_violation) for trial in trials),
         ),
+        publication_share(links, unreported, data_date) if links else "",
     )
 
 
@@ -157,6 +167,7 @@ def main(argv: list[str] | None = None) -> None:
         build(args.out, args.snapshot_dir, os.environ.get("NAME_SPONSORS") == "1")
     elif args.command == "fetch":
         print(fetch(args.out))
+        print(publications.link_snapshot(args.out))
     elif args.command == "sponsors-seed":
         print(f"{sponsors_seed(args.table, args.snapshot_dir)} unreviewed proposals added")
     elif args.step == "sample":
