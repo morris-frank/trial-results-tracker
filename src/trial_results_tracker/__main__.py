@@ -1,13 +1,17 @@
 """Command line entrypoint. `fetch` pulls a dated registry snapshot; `build` writes the site."""
 
 import argparse
+import csv
+import json
 import os
 import tempfile
 from collections import Counter
 from datetime import date
 from pathlib import Path
+from urllib.parse import quote
+from urllib.request import urlopen
 
-from trial_results_tracker import snapshot, validate
+from trial_results_tracker import snapshot, sponsors, validate
 from trial_results_tracker.classify import KEESTRA_2021, V1_0, classify
 from trial_results_tracker.crosswalk import crosswalk
 from trial_results_tracker.export import LICENCE, LICENCE_URL, export
@@ -16,6 +20,8 @@ from trial_results_tracker.parse import parse
 from trial_results_tracker.render import headline, render
 
 SNAPSHOT = Path(__file__).resolve().parents[2] / "SNAPSHOT"
+ALIASES = Path(__file__).resolve().parents[2] / "sponsors" / "aliases.csv"
+ROR_AFFILIATION = "https://api.ror.org/v2/organizations?affiliation="
 NAMED = "Organisations are named in the downloads; individual sponsors are pooled unnamed."
 UNNAMED = (
     "Sponsor names are withheld until the naming gate is passed: sponsors are counted by"
@@ -37,7 +43,7 @@ def build(out: Path, snapshot_dir: Path | None = None, name_sponsors: bool = Fal
     # Vercel's Git build has no .git directory but exposes the commit.
     sha = os.environ.get("VERCEL_GIT_COMMIT_SHA") or code_sha()
     meta = {"dataTimestamp": manifest["dataTimestamp"], "codeSha": sha, "snapshot": tag}
-    export(out, trials, as_of, meta, name_sponsors)
+    export(out, trials, as_of, meta, name_sponsors, sponsors.lookup(ALIASES.read_text()))
     render(
         out,
         counts,
@@ -96,6 +102,27 @@ def validate_score(sample: Path, coder_a: Path, coder_b: Path) -> None:
     page.write_text(validate.scored(page.read_text(), result))
 
 
+def sponsors_seed(table: Path, snapshot_dir: Path | None) -> int:
+    """Append unreviewed ROR proposals to `table` for every raw string above D6's threshold
+    that has no row yet; existing rows, reviewed or not, are kept as they are."""
+    with tempfile.TemporaryDirectory() as scratch:
+        directory = snapshot_dir or snapshot.download(SNAPSHOT.read_text().strip(), Path(scratch))
+        as_of = date.fromisoformat(snapshot.manifest(directory)["dataTimestamp"][:10])
+        wanted = sponsors.candidates(map(parse, snapshot.records(directory)), as_of)
+    rows = list(csv.reader(table.open(encoding="utf-8")))[1:] if table.exists() else []
+    known = {row[0] for row in rows}
+    for raw in wanted:
+        if raw not in known:
+            with urlopen(ROR_AFFILIATION + quote(raw), timeout=60) as response:  # noqa: S310
+                rows.append(sponsors.propose(raw, json.load(response)["items"]))
+    table.parent.mkdir(parents=True, exist_ok=True)
+    with table.open("w", encoding="utf-8", newline="") as f:
+        writer = csv.writer(f)
+        writer.writerow(sponsors.COLUMNS)
+        writer.writerows(sorted(rows))
+    return len(rows) - len(known)
+
+
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(prog="trial-results-tracker")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -117,12 +144,17 @@ def main(argv: list[str] | None = None) -> None:
     score_cmd.add_argument("sample", type=Path, help="the <method>-<snapshot>-sample.csv key")
     score_cmd.add_argument("coder_a", type=Path)
     score_cmd.add_argument("coder_b", type=Path)
+    seed_cmd = sub.add_parser("sponsors-seed", help="propose ROR matches into the alias table")
+    seed_cmd.add_argument("--table", type=Path, default=ALIASES)
+    seed_cmd.add_argument("--snapshot-dir", type=Path)
     args = parser.parse_args(argv)
     if args.command == "build":
         # NAME_SPONSORS=1 publishes organisation names in the downloads; off until D7's gate.
         build(args.out, args.snapshot_dir, os.environ.get("NAME_SPONSORS") == "1")
     elif args.command == "fetch":
         print(fetch(args.out))
+    elif args.command == "sponsors-seed":
+        print(f"{sponsors_seed(args.table, args.snapshot_dir)} unreviewed proposals added")
     elif args.step == "sample":
         validate_sample(args.out, args.snapshot_dir, args.seed, args.size)
     else:
