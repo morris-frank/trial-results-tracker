@@ -72,3 +72,22 @@ run = "uv run --frozen python -m trial_results_tracker fetch --out data/raw"
 [tasks.build]
 description = "Build the static site into dist/ (what Vercel serves)"
 run = "uv run --frozen python -m trial_results_tracker build --out dist"
+
+[tasks.snapshot]
+description = "Publish data/raw/ as GitHub Release data-<date> and pin it in SNAPSHOT; refuses if that release exists"
+run = '''
+set -eu
+field() { uv run --frozen python -c "import json,sys; print(json.load(open('data/raw/manifest.json'))[sys.argv[1]])" "$1"; }
+file=$(field file)
+tag="data-${file#ctgov-}"
+tag="${tag%.jsonl.gz}"
+if gh release view "$tag" >/dev/null 2>&1; then
+  echo "release $tag already exists; releases are never overwritten" >&2
+  exit 1
+fi
+gh release create "$tag" "data/raw/$file" data/raw/manifest.json \
+  --target "$(field codeSha)" \
+  --title "$tag" \
+  --notes "ClinicalTrials.gov API $(field apiVersion), data timestamp $(field dataTimestamp): $(field rowsWritten) interventional studies, fetched by code $(field codeSha)."
+echo "$tag" > SNAPSHOT
+'''
