@@ -1,0 +1,69 @@
+{
+    "protocolSection": {
+        "identificationModule": {
+            "nctId": "NCT01916382"
+        },
+        "statusModule": {
+            "statusVerifiedDate": "2018-05",
+            "overallStatus": "UNKNOWN",
+            "startDateStruct": {
+                "date": "2014-04",
+                "type": "ACTUAL"
+            },
+            "primaryCompletionDateStruct": {
+                "date": "2016-02",
+                "type": "ACTUAL"
+            },
+            "completionDateStruct": {
+                "date": "2020-02-02",
+                "type": "ESTIMATED"
+            },
+            "lastUpdatePostDateStruct": {
+                "date": "2018-05-31",
+                "type": "ACTUAL"
+            }
+        },
+        "sponsorCollaboratorsModule": {
+            "responsibleParty": {
+                "type": "PRINCIPAL_INVESTIGATOR"
+            },
+            "leadSponsor": {
+                "name": "University of Liverpool",
+                "class": "OTHER"
+            }
+        },
+        "oversightModule": {},
+        "designModule": {
+            "studyType": "INTERVENTIONAL",
+            "enrollmentInfo": {
+                "count": 140,
+                "type": "ESTIMATED"
+            }
+        }
+    },
+    "annotationSection": {
+        "annotationModule": {
+            "unpostedAnnotation": {
+                "unpostedEvents": [
+                    {
+                        "type": "RELEASE",
+                        "date": "2020-02-13"
+                    },
+                    {
+                        "type": "RESET",
+                        "date": "2020-02-28"
+                    },
+                    {
+                        "type": "RELEASE",
+                        "date": "2025-02-19"
+                    },
+                    {
+                        "type": "RESET",
+                        "date": "2025-03-11"
+                    }
+                ]
+            }
+        }
+    },
+    "hasResults": false
+}
