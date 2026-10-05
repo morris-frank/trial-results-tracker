@@ -10,6 +10,7 @@ from pathlib import Path
 from string import Template
 
 from trial_results_tracker.classify import Category
+from trial_results_tracker.stats import wilson
 
 SITE = Path(__file__).resolve().parents[2] / "site"
 TEMPLATES = SITE / "templates"
@@ -29,10 +30,51 @@ LABELS = {
     Category.INCONSISTENT: "Inconsistent record",
 }
 
+# docs/methodology.md "Categories": returned in QC is due but not unreported; status-overdue
+# and inconsistent trials enter only the upper bound (D5).
+DUE = (
+    Category.DUE_NOT_REPORTED,
+    Category.DUE_REPORTED_IN_TIME,
+    Category.DUE_REPORTED_LATE,
+    Category.DUE_RETURNED_IN_QC,
+)
+STALE = (Category.STATUS_OVERDUE, Category.INCONSISTENT)
+
 
 def _number(value: str, method: str) -> str:
     """A table cell whose number names the rule set it was counted under (AGENTS.md rule 1)."""
     return f'<td class="n">{value} <span class="method">{escape(method)}</span></td>'
+
+
+def headline(counts: Counter[Category], method: str, data_date: str) -> str:
+    """The overview's headline block: due-not-reported over due with a Wilson 95% CI, and
+    the D5 upper bound. `counts` must come from the rule set named by `method`."""
+    method, data_date = escape(method), escape(data_date)
+    unreported, due = counts[Category.DUE_NOT_REPORTED], sum(counts[c] for c in DUE)
+    overdue, inconsistent = counts[Category.STATUS_OVERDUE], counts[Category.INCONSISTENT]
+    stale = overdue + inconsistent
+    if due == 0:
+        figure = f"    <p>No trials are due under method {method} as of {data_date}.</p>"
+    else:
+        low, high = wilson(unreported, due)
+        figure = (
+            f'    <p class="headline"><span class="n">{unreported / due:.1%}</span> of '
+            f'<span class="n">{due:,}</span> due trials (95% CI <span class="n">{low:.1%}</span> '
+            f'to <span class="n">{high:.1%}</span>) have no summary results on ClinicalTrials.gov '
+            f"within 12 months of primary completion, as of {data_date}. Method {method}.</p>"
+        )
+    if due + stale == 0:
+        bound = ""
+    else:
+        share = (unreported + stale) / (due + stale)
+        bound = (
+            f'\n    <p>Upper bound: <span class="n">{share:.1%}</span> of '
+            f'<span class="n">{due + stale:,}</span> trials if the '
+            f'<span class="n">{overdue:,}</span> status-overdue and '
+            f'<span class="n">{inconsistent:,}</span> inconsistent records, whose registry '
+            "status is stale or unreadable, are also counted as unreported.</p>"
+        )
+    return figure + bound
 
 
 def render(
@@ -42,6 +84,7 @@ def render(
     method: str,
     comparison: str,
     context: dict[str, str],
+    headline_html: str = "",
 ) -> None:
     """Write index.html and methodology.html. `counts` are under `method`; `cross` is keyed by
     (`comparison` category, `method` category); `context` fills the templates' other fields."""
@@ -71,6 +114,7 @@ def render(
         "share_cell": _number("100.0%", method),
         "crosswalk_rows": crosswalk_rows,
         "crosswalk_total": _number(f"{cross.total():,}", pair_method),
+        "headline": headline_html,
     }
     out.mkdir(parents=True, exist_ok=True)
     for asset in ("favicon.png", "style.css"):
