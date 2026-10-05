@@ -24,6 +24,7 @@ The repository contract for humans and coding agents; `CLAUDE.md` links here.
 - `src/trial_results_tracker/`: the package; `__main__.py` is the CLI (`fetch`, `build`).
 - `site/`: static assets the build copies into `dist/`.
 - `sponsors/aliases.csv`: the reviewed sponsor alias table; only reviewed rows are used.
+- `sponsors/disputes.csv`: open disputes, shown as per-trial notes; `CORRECTIONS.md` logs outcomes.
 - `tests/`: pytest.
 - `docs/`: research and plans, deleted or folded into code when done.
 - `vercel.json`: the deploy. Vercel builds every push to `main`.

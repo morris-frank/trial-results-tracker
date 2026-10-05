@@ -1,19 +1,25 @@
 """Render category counts into the static site: plain HTML and CSS, no scripts (docs/plan.md T5).
 
-Only aggregates reach this module, so no sponsor name can be rendered (naming gate, D7).
+Sponsor names arrive only as `Ranked` rows (T12), which the build passes in only with
+NAME_SPONSORS on (naming gate, D7); otherwise only aggregates reach this module.
 """
 
 import shutil
 from collections import Counter
+from collections.abc import Sequence
 from html import escape
 from pathlib import Path
 from string import Template
+from typing import TYPE_CHECKING
 
 from trial_results_tracker.classify import Category
 from trial_results_tracker.legal_us import LegalDuty
 from trial_results_tracker.publications import EVIDENCE_BASIS as PUBLICATION_BASIS
 from trial_results_tracker.publications import Links
 from trial_results_tracker.stats import wilson
+
+if TYPE_CHECKING:
+    from trial_results_tracker.sponsors import Ranked
 
 SITE = Path(__file__).resolve().parents[2] / "site"
 TEMPLATES = SITE / "templates"
@@ -42,6 +48,8 @@ DUE = (
     Category.DUE_RETURNED_IN_QC,
 )
 STALE = (Category.STATUS_OVERDUE, Category.INCONSISTENT)
+
+REGISTRY = "https://clinicaltrials.gov/study/"
 
 
 def _number(value: str, method: str) -> str:
@@ -129,6 +137,74 @@ def publication_share(links: Links, unreported: set[str], data_date: str) -> str
     )
 
 
+def league(ranked: Sequence["Ranked"], method: str, data_date: str, threshold: int) -> str:
+    """The T12 league table of reviewed lead sponsors, each linked to its page."""
+    method, data_date = escape(method), escape(data_date)
+    rows = "\n".join(
+        f"        <tr>{_number(f'{r.rank}=' if r.tied else str(r.rank), method)}"
+        f'<td><a href="sponsor-{escape(r.sponsor_id)}.html">{escape(r.name)}</a></td>'
+        f"{_number(f'{r.due:,}', method)}"
+        f"{_number(f'{len(r.unreported) / r.due:.1%}', method)}"
+        f"{_number(f'{r.low:.1%} to {r.high:.1%}', method)}</tr>"
+        for r in ranked
+    )
+    return (
+        f'    <h2 id="league">Lead sponsors with at least {threshold} due trials</h2>\n'
+        f"    <p>Reviewed lead sponsors with at least {threshold} due trials under method {method},"
+        " ranked by the share of their due trials with no summary results on ClinicalTrials.gov"
+        f" as of {data_date}, highest first, with its Wilson 95% CI. Read the interval, not only"
+        ' the rank. Equal shares share a rank, marked "=", and are listed alphabetically.'
+        " Evidence basis: <strong>registry only</strong>. A lead-sponsor string counts only"
+        " through a reviewed row of the alias table; aliases are pooled, but no organisation"
+        " rolls up another, and individual sponsors are never ranked. This is the WHO standard,"
+        " not a legal finding: for legal compliance see the"
+        ' <a href="https://fdaaa.trialstracker.net/">FDAAA TrialsTracker</a> and the'
+        ' <a href="https://eu.trialstracker.net/">EU TrialsTracker</a>.</p>\n'
+        "    <table>\n"
+        '      <thead><tr><th class="n">Rank</th><th>Lead sponsor</th><th class="n">Due trials'
+        '</th><th class="n">No results submitted</th><th class="n">95% CI</th></tr></thead>\n'
+        f"      <tbody>\n{rows}\n      </tbody>\n    </table>\n"
+    )
+
+
+def _trial(nct_id: str, disputes: dict[str, dict[str, str]], label: str = "") -> str:
+    """A registry-linked list item, with its dispute note if one is open; a dispute never
+    removes the trial."""
+    item = f'<a href="{REGISTRY}{escape(nct_id)}">{escape(nct_id)}</a>{label}'
+    if dispute := disputes.get(nct_id):
+        item += (
+            f' <span class="dispute">Disputed on {escape(dispute["opened_on"])}:'
+            f' {escape(dispute["note"])} (<a href="{escape(dispute["issue"])}">correction'
+            " request</a>). The trial stays listed as the registry shows it while the dispute is"
+            " open.</span>"
+        )
+    return f"        <li>{item}</li>"
+
+
+def _sponsor_fields(
+    r: "Ranked", ranked: int, disputes: dict[str, dict[str, str]], method: str, data_date: str
+) -> dict[str, str]:
+    method, data_date = escape(method), escape(data_date)
+    share = len(r.unreported) / r.due
+    summary = (
+        f'    <p class="headline"><span class="n">{len(r.unreported):,}</span> of'
+        f' <span class="n">{r.due:,}</span> due trials (<span class="n">{share:.1%}</span>, 95% CI'
+        f' <span class="n">{r.low:.1%}</span> to <span class="n">{r.high:.1%}</span>) have no'
+        " summary results on ClinicalTrials.gov within 12 months of primary completion, as of"
+        f' {data_date}. Method {method}; rank <span class="n">{r.rank}{"=" if r.tied else ""}'
+        f'</span> of <span class="n">{ranked:,}</span> on the'
+        ' <a href="index.html#league">league table</a>.</p>'
+    )
+    none = "        <li>None.</li>"
+    return {
+        "name": escape(r.name),
+        "summary": summary,
+        "aliases": ", ".join(escape(raw) for raw in r.aliases),
+        "unreported": "\n".join(_trial(n, disputes) for n in r.unreported) or none,
+        "check": "\n".join(_trial(n, disputes, f": {LABELS[c]}") for n, c in r.check) or none,
+    }
+
+
 def render(
     out: Path,
     counts: Counter[Category],
@@ -139,9 +215,13 @@ def render(
     headline_html: str = "",
     legal_html: str = "",
     publications_html: str = "",
+    league_html: str = "",
+    ranked: Sequence["Ranked"] = (),
+    disputes: dict[str, dict[str, str]] | None = None,
 ) -> None:
-    """Write index.html and methodology.html. `counts` are under `method`; `cross` is keyed by
-    (`comparison` category, `method` category); `context` fills the templates' other fields."""
+    """Write index.html, methodology.html and one sponsor-<id>.html per `ranked` row. `counts`
+    are under `method`; `cross` is keyed by (`comparison` category, `method` category);
+    `context` fills the templates' other fields; `disputes` holds open disputes by NCT ID."""
     unlabelled = (set(counts) | {c for pair in cross for c in pair}) - set(LABELS)
     if unlabelled:
         raise ValueError(f"no label for categories {sorted(unlabelled)}")
@@ -171,6 +251,7 @@ def render(
         "headline": headline_html,
         "legal": legal_html,
         "publications": publications_html,
+        "league": league_html,
     }
     out.mkdir(parents=True, exist_ok=True)
     for asset in ("favicon.png", "style.css"):
@@ -180,4 +261,11 @@ def render(
         main = Template((TEMPLATES / f"{page}.html").read_text()).substitute(fields)
         (out / f"{page}.html").write_text(
             layout.substitute(fields, title=title, main=main.rstrip("\n"))
+        )
+    sponsor = Template((TEMPLATES / "sponsor.html").read_text())
+    for r in ranked:
+        page = _sponsor_fields(r, len(ranked), disputes or {}, method, context["data_date"])
+        main = sponsor.substitute(fields, **page)
+        (out / f"sponsor-{r.sponsor_id}.html").write_text(
+            layout.substitute(fields, title=page["name"], main=main.rstrip("\n"))
         )

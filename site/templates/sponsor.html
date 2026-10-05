@@ -1,0 +1,27 @@
+    <h1>$name</h1>
+    <p class="meta">$method · data processed by ClinicalTrials.gov on $data_date · code <code>$code_sha_short</code></p>
+$summary
+    <p>Evidence basis: <strong>registry only</strong>. "No results submitted" means no summary results
+      on ClinicalTrials.gov as of $data_date; a trial listed here may have reported in a journal. The WHO
+      standard is an ethical norm; missing it does not by itself mean any law applies or was broken.
+      Lead-sponsor strings counted for this sponsor, through reviewed rows of the alias table: $aliases.
+      Trials whose lead sponsor is an individual are never counted.</p>
+    <h2 id="unreported">Due, no results submitted</h2>
+    <ul>
+$unreported
+    </ul>
+    <h2 id="check">Check your registry record</h2>
+    <p>These trials are not counted as unreported, and not counted as due. Their registry status is
+      stale (still open more than 395 days after primary completion) or cannot be read as finished or
+      ongoing. Updating the registry record is the usual fix; the next data refresh picks it up.</p>
+    <ul>
+$check
+    </ul>
+    <h2>Right of reply</h2>
+    <p>If a trial is listed wrongly, open a
+      <a href="https://github.com/morris-frank/trial-results-tracker/issues/new?template=correction.yml">correction request</a>.
+      A dispute adds a note to the trial and never removes it from the data; every outcome is logged in
+      <a href="https://github.com/morris-frank/trial-results-tracker/blob/main/CORRECTIONS.md">CORRECTIONS.md</a>.
+      For legal compliance rather than the WHO standard, see the
+      <a href="https://fdaaa.trialstracker.net/">FDAAA TrialsTracker</a> and the
+      <a href="https://eu.trialstracker.net/">EU TrialsTracker</a>.</p>

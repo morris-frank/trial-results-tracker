@@ -13,13 +13,16 @@ import re
 import unicodedata
 from collections import Counter
 from collections.abc import Iterable
+from dataclasses import dataclass, replace
 from datetime import date
 from enum import StrEnum
+from fractions import Fraction
 
-from trial_results_tracker.classify import V1_0, classify
+from trial_results_tracker.classify import V1_0, Category, classify
 from trial_results_tracker.export import is_individual
 from trial_results_tracker.model import Trial
-from trial_results_tracker.render import DUE
+from trial_results_tracker.render import DUE, STALE
+from trial_results_tracker.stats import wilson
 
 COLUMNS = ("sponsor_raw", "sponsor_id", "ror_id", "match_method", "reviewed_by", "reviewed_on")
 THRESHOLD = 20  # due trials, D6's ranking threshold
@@ -82,3 +85,53 @@ def candidates(trials: Iterable[Trial], as_of: date, threshold: int = THRESHOLD)
         if trial.sponsor_raw and not is_individual(trial) and classify(trial, as_of, V1_0) in DUE
     )
     return [raw for raw, n in due.most_common() if n >= threshold]
+
+
+@dataclass(frozen=True)
+class Ranked:
+    """One league-table row (docs/plan.md T12): v1.0 counts for a reviewed sponsor ID."""
+
+    sponsor_id: str
+    name: str  # the commonest raw string among its trials, ties alphabetical
+    aliases: tuple[str, ...]  # the raw strings its counted trials carry, sorted
+    rank: int  # competition ranking: tied rows share a rank and the next one skips
+    tied: bool
+    due: int
+    unreported: tuple[str, ...]  # NCT IDs due with no results submitted
+    check: tuple[tuple[str, Category], ...]  # status-overdue and inconsistent, never counted
+    low: float
+    high: float
+
+
+def rank(
+    trials: Iterable[Trial], as_of: date, ids: dict[str, str], threshold: int = THRESHOLD
+) -> list[Ranked]:
+    """Reviewed sponsors (`ids`, from `lookup`) with at least `threshold` v1.0 due trials,
+    highest share due-not-reported first, ties alphabetical. Individual trials never count
+    (D8), so an individual sponsor never ranks."""
+    groups: dict[str, list[tuple[Trial, Category]]] = {}
+    for trial in trials:
+        sponsor_id = ids.get(trial.sponsor_raw or "")
+        if sponsor_id and not is_individual(trial):
+            groups.setdefault(sponsor_id, []).append((trial, classify(trial, as_of, V1_0)))
+    rows = []
+    for sponsor_id, group in groups.items():
+        due = sum(category in DUE for _, category in group)
+        if due < threshold:
+            continue
+        unreported = sorted(t.nct_id for t, c in group if c is Category.DUE_NOT_REPORTED)
+        names = Counter(t.sponsor_raw for t, _ in group)
+        name = min(names, key=lambda raw: (-names[raw], raw))
+        check = tuple(sorted((t.nct_id, c) for t, c in group if c in STALE))
+        low, high = wilson(len(unreported), due)
+        share = Fraction(len(unreported), due)
+        rows.append(
+            (share, Ranked(sponsor_id, name, tuple(sorted(names)), 0, False, due,
+                           tuple(unreported), check, low, high))
+        )  # fmt: skip
+    rows.sort(key=lambda row: (-row[0], row[1].name.casefold(), row[1].name))
+    shares = [share for share, _ in rows]
+    return [
+        replace(row, rank=shares.index(share) + 1, tied=shares.count(share) > 1)
+        for share, row in rows
+    ]
