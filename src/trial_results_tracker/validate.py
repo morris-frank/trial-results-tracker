@@ -111,13 +111,13 @@ def write_sample(stem: Path, sample: list[tuple[str, Category]], seed: int) -> N
     """`<stem>-sample.csv` is the key; `<stem>-coding.csv` is the blank, shuffled coding sheet."""
     stem.parent.mkdir(parents=True, exist_ok=True)
     with Path(f"{stem}-sample.csv").open("w", newline="") as f:
-        writer = csv.writer(f)
+        writer = csv.writer(f, lineterminator="\n")
         writer.writerow(COLUMNS[:3])
         writer.writerows((nct, registry_url(nct), category) for nct, category in sample)
     shuffled = [nct for nct, _ in sample]
     random.Random(seed).shuffle(shuffled)  # noqa: S311
     with Path(f"{stem}-coding.csv").open("w", newline="") as f:
-        writer = csv.writer(f)
+        writer = csv.writer(f, lineterminator="\n")
         writer.writerow(COLUMNS)
         writer.writerows((nct, registry_url(nct), "", "") for nct in shuffled)
 
