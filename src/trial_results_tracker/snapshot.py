@@ -23,7 +23,8 @@ def manifest(directory: Path) -> dict:
 
 
 def download(tag: str, out: Path, base: str = RELEASES) -> Path:
-    """Fetch `manifest.json` and the snapshot file it names from release `tag` into `out`."""
+    """Fetch `manifest.json` and the snapshot and publications files it names from release
+    `tag` into `out`."""
     out.mkdir(parents=True, exist_ok=True)
 
     def get(name: str) -> None:
@@ -34,6 +35,8 @@ def download(tag: str, out: Path, base: str = RELEASES) -> Path:
 
     get("manifest.json")
     get(manifest(out)["file"])
+    if "publications" in manifest(out):  # T14; older releases have none
+        get(manifest(out)["publications"])
     return out
 
 

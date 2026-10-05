@@ -1,0 +1,57 @@
+{
+ "query": "TITLE_ABS:\"NCT01174160\" OR TITLE_ABS:\"NCT01916382\" OR TITLE_ABS:\"NCT01245270\"",
+ "pages": [
+  {
+   "version": "6.9",
+   "hitCount": 3,
+   "nextCursorMark": "page-2",
+   "resultList": {
+    "result": [
+     {
+      "id": "37446173",
+      "source": "MED",
+      "pmid": "37446173",
+      "doi": "10.3390/ijms241310996",
+      "title": "Nitisinone Treatment Affects Biomarkers of Bone and Cartilage Remodelling in Alkaptonuria Patients.",
+      "abstractText": "Nitisinone has been approved for treatment of alkaptonuria (AKU). Non-invasive biomarkers of joint tissue remodelling could aid in understanding the molecular changes in AKU pathogenesis and how these can be affected by treatment. Serological and urinary biomarkers of type I collagen and II collagen in AKU were investigated in patients enrolled in the randomized SONIA 2 (NCT01916382) clinical study at baseline and yearly until the end of the study (Year 4). The trajectories of the biomarkers over time were observed. After treatment with nitisinone, the biomarkers of type I collagen remodelling increased at Year 1 (19% and 40% increase in CTX-I and PRO-C1, respectively), which was potentially reflected in the higher degree of mobility seen following treatment. The biomarkers of type II collagen remodelling decreased over time in the nitisinone group: C2M showed a 9.7% decline at Year 1, and levels then remained stable over the following visits; CTX-II showed a 26% decline at Year 3 and 4 in the nitisinone-treated patients. Nitisinone treatment induced changes in biomarkers of bone and cartilage remodelling. These biomarkers can aid patient management and deepen our knowledge of the molecular mechanisms of this rare disease.",
+      "firstPublicationDate": "2023-07-01"
+     },
+     {
+      "id": "36270742",
+      "source": "MED",
+      "pmid": "36270742",
+      "doi": "10.1136/rmdopen-2022-002422",
+      "title": "Radiological evolution of spinal disease in alkaptonuria and the effect of nitisinone.",
+      "abstractText": "<h4>Objectives</h4>Ochronotic spondyloarthropathy represents one of the main clinical manifestations of alkaptonuria (AKU); however, prospective data and description of the effect of nitisinone treatment are lacking.<h4>Methods</h4>Patients with AKU aged 25 years or older were randomly assigned to receive either oral nitisinone 10\u2009mg/day (N=69) or no treatment (N=69). Spine radiographs were recorded yearly at baseline, 12, 24, 36 and 48 months, and the images were scored for the presence of intervertebral space narrowing, soft tissue calcifications, vacuum phenomena, osteophytes/hyperostosis and spinal fusion in the cervical, thoracic and lumbosacral segment at each of the time points.<h4>Results</h4>At baseline, narrowing of the intervertebral spaces, the presence of osteophytes/hyperostosis and calcifications were the three most frequent radiographic features in AKU. The rate of progression of the five main features during the 4\u2009years, ranked from the highest to lowest was as follows: intervertebral spaces narrowing, calcifications, vacuum phenomena, osteophytes/hyperostosis and fusions. The rate of progression did not differ between the treated and untreated groups in any of the five radiographic parameters except for a slower rate of progression (sum of all five features) in the treatment group compared with the control group (0.45 (1.11) nitisinone vs 0.74 (1.11) controls, p=0.049) in the thoracic segment.<h4>Conclusion</h4>The present study shows a relatively slow but significant worsening of radiographic features in patients with AKU over 4\u2009years. Our results demonstrate a modest beneficial effect of 10\u2009mg/day of nitisinone on the slowly progressing spondylosis in AKU during the relatively limited follow-up time.<h4>Trial registration number</h4>NCT01916382.",
+      "firstPublicationDate": "2022-10-01"
+     }
+    ]
+   }
+  },
+  {
+   "version": "6.9",
+   "hitCount": 3,
+   "nextCursorMark": "page-3",
+   "resultList": {
+    "result": [
+     {
+      "id": "32822600",
+      "source": "MED",
+      "pmid": "32822600",
+      "doi": "10.1016/s2213-8587(20)30228-x",
+      "title": "Efficacy and safety of once-daily nitisinone for patients with alkaptonuria (SONIA 2): an international, multicentre, open-label, randomised controlled trial.",
+      "abstractText": "<h4>Background</h4>Alkaptonuria is a rare, genetic, multisystem disease characterised by the accumulation of homogentisic acid (HGA). No HGA-lowering therapy has been approved to date. The aim of SONIA 2 was to investigate the efficacy and safety of once-daily nitisinone for reducing HGA excretion in patients with alkaptonuria and to evaluate whether nitisinone has a clinical benefit.<h4>Methods</h4>SONIA 2 was a 4-year, open-label, evaluator-blind, randomised, no treatment controlled, parallel-group study done at three sites in the UK, France, and Slovakia. Patients aged 25 years or older with confirmed alkaptonuria and any clinical disease manifestations were randomly assigned (1:1) to receive either oral nitisinone 10 mg daily or no treatment. Patients could not be masked to treatment due to colour changes in the urine, but the study was evaluator-blinded as far as possible. The primary endpoint was daily urinary HGA excretion (u-HGA<sub>24</sub>) after 12 months. Clinical evaluation Alkaptonuria Severity Score Index (cAKUSSI) score was assessed at 12, 24, 36, and 48 months. Efficacy variables were analysed in all randomly assigned patients with a valid u-HGA<sub>24</sub> measurement at baseline. Safety variables were analysed in all randomly assigned patients. The study was registered at ClinicalTrials.gov (NCT01916382).<h4>Findings</h4>Between May 7, 2014, and Feb 16, 2015, 139 patients were screened, of whom 138 were included in the study, with 69 patients randomly assigned to each group. 55 patients in the nitisinone group and 53 in the control group completed the study. u-HGA<sub>24</sub> at 12 months was significantly decreased by 99\u00b77% in the nitisinone group compared with the control group (adjusted geometric mean ratio of nitisinone/control 0\u00b7003 [95% CI 0\u00b7003 to 0\u00b7004], p<0\u00b70001). At 48 months, the increase in cAKUSSI score from baseline was significantly lower in the nitisinone group compared with the control group (adjusted mean difference -8\u00b76 points [-16\u00b70 to -1\u00b72], p=0\u00b7023). 400 adverse events occurred in 59 (86%) patients in the nitisinone group and 284 events occurred in 57 (83%) patients in the control group. No treatment-related deaths occurred.<h4>Interpretation</h4>Nitisinone 10 mg daily was well tolerated and effective in reducing urinary excretion of HGA. Nitisinone decreased ochronosis and improved clinical signs, indicating a slower disease progression.<h4>Funding</h4>European Commission Seventh Framework Programme.",
+      "firstPublicationDate": "2020-08-18"
+     }
+    ]
+   }
+  },
+  {
+   "version": "6.9",
+   "hitCount": 3,
+   "resultList": {
+    "result": []
+   }
+  }
+ ]
+}

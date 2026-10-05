@@ -66,7 +66,7 @@ description = "Secret scan of the working tree"
 run = "gitleaks dir . --redact --verbose"
 
 [tasks.fetch]
-description = "Pull a dated ClinicalTrials.gov snapshot into data/raw/ (about 20 min)"
+description = "Pull a dated ClinicalTrials.gov snapshot into data/raw/, then search Europe PMC for its due-not-reported trials"
 run = "uv run --frozen python -m trial_results_tracker fetch --out data/raw"
 
 [tasks.build]
@@ -81,11 +81,13 @@ field() { uv run --frozen python -c "import json,sys; print(json.load(open('data
 file=$(field file)
 tag="data-${file#ctgov-}"
 tag="${tag%.jsonl.gz}"
+# The publication search file (T14), when this fetch produced one.
+pubs=$(uv run --frozen python -c "import json; print(json.load(open('data/raw/manifest.json')).get('publications', ''))")
 if gh release view "$tag" >/dev/null 2>&1; then
   echo "release $tag already exists; releases are never overwritten" >&2
   exit 1
 fi
-gh release create "$tag" "data/raw/$file" data/raw/manifest.json \
+gh release create "$tag" "data/raw/$file" data/raw/manifest.json ${pubs:+"data/raw/$pubs"} \
   --target "$(field codeSha)" \
   --title "$tag" \
   --notes "ClinicalTrials.gov API $(field apiVersion), data timestamp $(field dataTimestamp): $(field rowsWritten) interventional studies, fetched by code $(field codeSha)."
