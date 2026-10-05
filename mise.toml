@@ -91,3 +91,7 @@ gh release create "$tag" "data/raw/$file" data/raw/manifest.json \
   --notes "ClinicalTrials.gov API $(field apiVersion), data timestamp $(field dataTimestamp): $(field rowsWritten) interventional studies, fetched by code $(field codeSha)."
 echo "$tag" > SNAPSHOT
 '''
+
+[tasks.notify]
+description = "Send a test refresh report to Telegram (needs TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID in .env)"
+run = 'uv run --frozen python -m trial_results_tracker notify --status success --previous "$(cat SNAPSHOT)"'
