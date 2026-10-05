@@ -1,0 +1,43 @@
+    <h1>Methodology</h1>
+    <p class="meta">$method · data processed by ClinicalTrials.gov on $data_date · code <code>$code_sha_short</code></p>
+
+    <h2>Standard</h2>
+    <p>The WHO 2017 joint statement asks for summary results on the registry within 12 months of
+      primary completion (<a href="https://www.who.int/news/item/18-05-2017-joint-statement-on-registration">WHO</a>).
+      This is an ethical norm, not a legal duty; this site makes no legal determination.</p>
+
+    <h2>Rules: $method</h2>
+    <p>The rules reimplement the code behind Keestra et al.,
+      <a href="https://doi.org/10.1186/s13063-021-05330-5">Trials 22:385 (2021)</a>
+      (<a href="https://github.com/LeeSean96/GlobalHealthRanking">LeeSean96/GlobalHealthRanking</a>, MIT,
+      Copyright 2020 Yi Nian Lee), so later corrections can be measured against them. Each trial is
+      classified as of the data date, in this order:</p>
+    <ol>
+      <li><strong>No reporting requirement</strong>: status WITHDRAWN or SUSPENDED.</li>
+      <li>Status COMPLETED or TERMINATED:
+        <ul>
+          <li><strong>Completed, not yet due</strong>: primary completion date fewer than 395 days
+            (365 days plus 30 days for quality control) before the data date.</li>
+          <li><strong>Due, results submitted</strong>: otherwise, if a results first-submitted date exists.</li>
+          <li><strong>Due, no results submitted</strong>: otherwise, including a trial with no primary
+            completion date at all.</li>
+        </ul></li>
+      <li><strong>Ongoing</strong>: status NOT_YET_RECRUITING, RECRUITING, ENROLLING_BY_INVITATION or
+        ACTIVE_NOT_RECRUITING with a primary completion date fewer than 30 days before the data date
+        (or in the future).</li>
+      <li><strong>Inconsistent or stale record</strong>: everything else, such as status UNKNOWN or an
+        open status well past its primary completion date.</li>
+    </ol>
+    <p>As in the original code, a primary completion date given only as a month is read as the first of
+      that month, whether the date is actual or estimated is not read, and the submission date counts,
+      not the date results were posted.</p>
+
+    <h2>Modifications to the ClinicalTrials.gov data</h2>
+    <p>The data were requested from the ClinicalTrials.gov API $api_version, interventional studies only,
+      with only the fields needed for classification; no investigator, official or contact fields are fetched.
+      No record is edited. The changes made are: dates given as a month or a year are stored as the last
+      day of that period (then read as above); each trial is assigned one category by the rules above; and
+      only counts per category are published. The raw snapshot, its manifest and the code are public:
+      snapshot <a href="$release_url">$tag</a> ($rows_written records, fetched by code
+      <code>$fetch_sha_short</code>), rendered by code
+      <a href="https://github.com/morris-frank/trial-results-tracker/commit/$code_sha"><code>$code_sha_short</code></a>.</p>

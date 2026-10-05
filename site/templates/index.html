@@ -1,0 +1,20 @@
+    <h1>Do clinical trials post their results?</h1>
+    <p class="meta">$method · data processed by ClinicalTrials.gov on $data_date · code <code>$code_sha_short</code></p>
+    <p>Every interventional trial on ClinicalTrials.gov ($total trials), sorted into the
+      categories of Keestra et al. 2021 by a replication of their code. A trial is due once its
+      primary completion date is more than 395 days before the data date; it counts as reported
+      when summary results have been submitted to the registry.</p>
+    <table>
+      <thead><tr><th>Category</th><th class="n">Trials</th><th class="n">Share</th></tr></thead>
+      <tbody>
+$rows
+      </tbody>
+      <tfoot><tr><th>All interventional trials</th><td class="n">$total</td><td class="n">100.0%</td></tr></tfoot>
+    </table>
+    <p>Evidence basis: <strong>registry only</strong>. "No results submitted" means no summary
+      results on ClinicalTrials.gov as of $data_date; journal publications are not searched, so a trial in
+      that row may have reported elsewhere. Legal duty: <strong>not determined</strong>. The WHO
+      standard is an ethical norm; missing it is not by itself a breach of any law.</p>
+    <p>"Inconsistent or stale record" holds trials whose registry status cannot be read as finished
+      or ongoing, including trials still marked open long after their primary completion date. They
+      are not counted as unreported. These figures are aggregates; no sponsor is named.</p>

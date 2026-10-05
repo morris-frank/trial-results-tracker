@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="favicon.png">
+  <link rel="stylesheet" href="style.css">
+  <title>$title · Trial Results Tracker</title>
+  <meta name="description" content="Which clinical trials have posted their results on ClinicalTrials.gov, measured against the WHO 12-month standard.">
+</head>
+<body>
+  <nav><a href="index.html">Overview</a><a href="methodology.html">Methodology</a></nav>
+  <main>
+$main
+  </main>
+  <footer>
+    <p>Published by Maurice Frank as a personal, non-commercial project; not affiliated with Soilytix.
+      Corrections and questions: <a href="https://github.com/morris-frank/trial-results-tracker/issues">GitHub issues</a>.</p>
+    <p>Source data: <a href="https://clinicaltrials.gov/">ClinicalTrials.gov</a>, a database of the
+      US National Library of Medicine, as processed by ClinicalTrials.gov on $data_date.
+      This site derives categories from it as described on the <a href="methodology.html">methodology page</a>;
+      it claims no rights in the data.</p>
+    <p>Method: $method · snapshot <a href="$release_url">$tag</a> · code
+      <a href="https://github.com/morris-frank/trial-results-tracker/commit/$code_sha"><code>$code_sha_short</code></a>.
+      No cookies, analytics or scripts.</p>
+  </footer>
+</body>
+</html>
