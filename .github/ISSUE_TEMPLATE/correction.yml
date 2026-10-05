@@ -1,0 +1,50 @@
+name: Correction or dispute
+description: Report a trial or sponsor the tracker shows wrongly. A dispute adds a note; it never deletes data.
+title: "Correction: "
+labels: ["correction"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for checking. The tracker reads ClinicalTrials.gov as of the data date shown on each page,
+        so the usual fix is to update the registry record; the next refresh picks it up. While a dispute is
+        open, the trial stays listed with a note, and every outcome is logged in CORRECTIONS.md.
+        Please do not include personal data about trial participants or staff.
+  - type: input
+    id: trials
+    attributes:
+      label: NCT IDs
+      description: One or more trial IDs, comma separated.
+      placeholder: NCT01234567
+    validations:
+      required: true
+  - type: input
+    id: sponsor
+    attributes:
+      label: Sponsor page
+      description: The sponsor page or league-table row this concerns, if any.
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What is wrong
+      options:
+        - Results were submitted to the registry
+        - Results were published elsewhere (journal, other registry)
+        - The registry status or dates are wrong
+        - The trial is attributed to the wrong sponsor
+        - The method or category is applied wrongly
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence
+      description: Links or references we can check, such as a registry record, a DOI or a results posting.
+    validations:
+      required: true
+  - type: input
+    id: contact
+    attributes:
+      label: Your organisation and role (optional)
+      description: Helps us reply; it is public on this issue.

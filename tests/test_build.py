@@ -17,10 +17,13 @@ STUDIES = [
 ]
 
 
-def write_snapshot(directory: Path, rows_written: int = len(STUDIES)) -> Path:
+def write_snapshot(
+    directory: Path, rows_written: int | None = None, studies: list[dict] = STUDIES
+) -> Path:
+    rows_written = len(studies) if rows_written is None else rows_written
     directory.mkdir(parents=True, exist_ok=True)
     with gzip.open(directory / "ctgov-2026-10-05.jsonl.gz", "wt", encoding="utf-8") as lines:
-        for study in STUDIES:
+        for study in studies:
             lines.write(json.dumps(study) + "\n")
     manifest = {
         "apiVersion": "2.0.5",

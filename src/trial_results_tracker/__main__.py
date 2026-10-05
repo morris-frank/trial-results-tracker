@@ -18,10 +18,11 @@ from trial_results_tracker.crosswalk import crosswalk
 from trial_results_tracker.export import LICENCE, LICENCE_URL, export
 from trial_results_tracker.fetch import code_sha, fetch
 from trial_results_tracker.parse import parse
-from trial_results_tracker.render import headline, legal, publication_share, render
+from trial_results_tracker.render import headline, league, legal, publication_share, render
 
 SNAPSHOT = Path(__file__).resolve().parents[2] / "SNAPSHOT"
 ALIASES = Path(__file__).resolve().parents[2] / "sponsors" / "aliases.csv"
+DISPUTES = Path(__file__).resolve().parents[2] / "sponsors" / "disputes.csv"  # see CORRECTIONS.md
 ROR_AFFILIATION = "https://api.ror.org/v2/organizations?affiliation="
 NAMED = "Organisations are named in the downloads; individual sponsors are pooled unnamed."
 UNNAMED = (
@@ -50,7 +51,11 @@ def build(out: Path, snapshot_dir: Path | None = None, name_sponsors: bool = Fal
     # Vercel's Git build has no .git directory but exposes the commit.
     sha = os.environ.get("VERCEL_GIT_COMMIT_SHA") or code_sha()
     meta = {"dataTimestamp": manifest["dataTimestamp"], "codeSha": sha, "snapshot": tag}
-    export(out, trials, as_of, meta, name_sponsors, sponsors.lookup(ALIASES.read_text()), links)
+    ids = sponsors.lookup(ALIASES.read_text())
+    export(out, trials, as_of, meta, name_sponsors, ids, links)
+    # T12: the league table and sponsor pages exist only with the naming gate passed (D7).
+    ranked = sponsors.rank(trials, as_of, ids) if name_sponsors else []
+    disputes = {row["nct_id"]: row for row in csv.DictReader(DISPUTES.open(encoding="utf-8"))}
     render(
         out,
         counts,
@@ -76,6 +81,9 @@ def build(out: Path, snapshot_dir: Path | None = None, name_sponsors: bool = Fal
             sum(bool(trial.fdaaa801_violation) for trial in trials),
         ),
         publication_share(links, unreported, data_date) if links else "",
+        league(ranked, V1_0.name, data_date, sponsors.THRESHOLD) if name_sponsors else "",
+        ranked,
+        disputes,
     )
 
 
@@ -161,7 +169,8 @@ def main(argv: list[str] | None = None) -> None:
     seed_cmd.add_argument("--snapshot-dir", type=Path)
     args = parser.parse_args(argv)
     if args.command == "build":
-        # NAME_SPONSORS=1 publishes organisation names in the downloads; off until D7's gate.
+        # NAME_SPONSORS=1 publishes organisation names in the downloads, the league table and
+        # the sponsor pages; off until D7's gate.
         build(args.out, args.snapshot_dir, os.environ.get("NAME_SPONSORS") == "1")
     elif args.command == "fetch":
         print(fetch(args.out))
