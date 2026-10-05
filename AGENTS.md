@@ -21,7 +21,7 @@ The repository contract for humans and coding agents; `CLAUDE.md` links here.
 
 ## Layout
 
-- `src/trial_results_tracker/`: the package; `__main__.py` is the CLI (`build`).
+- `src/trial_results_tracker/`: the package; `__main__.py` is the CLI (`fetch`, `build`).
 - `site/`: static assets the build copies into `dist/`.
 - `tests/`: pytest.
 - `docs/`: research and plans, deleted or folded into code when done.
@@ -32,6 +32,7 @@ The repository contract for humans and coding agents; `CLAUDE.md` links here.
 ```sh
 mise run setup   # cold start
 mise run check   # lint + format check + tests: the definition of done
+mise run fetch   # dated registry snapshot into data/raw/
 mise run build   # site into dist/
 ```
 
