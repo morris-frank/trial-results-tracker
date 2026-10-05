@@ -1,0 +1,36 @@
+name: Refresh
+
+# Fetch a dated ClinicalTrials.gov snapshot, publish it as Release data-<date> and
+# pin that tag in SNAPSHOT on main. Manual only; the schedule arrives with T8.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: refresh
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: jdx/mise-action@v2
+        with:
+          cache: true
+      - run: uv sync --frozen
+      - run: mise run fetch
+      # Fails without changing anything if today's release already exists.
+      - run: mise run snapshot
+        env:
+          GH_TOKEN: ${{ github.token }}
+      - name: Commit the SNAPSHOT pin to main
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add SNAPSHOT
+          git commit -m "chore(snapshot): pin $(cat SNAPSHOT)"
+          git pull --rebase origin main  # main may have moved during the fetch
+          git push origin HEAD:main

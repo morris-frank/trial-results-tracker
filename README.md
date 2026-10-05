@@ -63,7 +63,15 @@ mise run build   # static site into dist/
 
 ## Configuration
 
-Nothing is configured yet. `.env.example` lists every variable as tasks add them.
+No variables are configured yet. `.env.example` lists every variable as tasks add them.
+
+Snapshots: raw registry data is never committed. The `Refresh` workflow
+(`.github/workflows/refresh.yml`, manual dispatch only) runs `mise run fetch`, then
+`mise run snapshot`, which publishes `data/raw/` as GitHub Release `data-<YYYY-MM-DD>`
+with the `.jsonl.gz` and `manifest.json` as assets, and commits the tag to the one-line
+`SNAPSHOT` file on `main`. A release is never overwritten: if that day's release exists,
+`mise run snapshot` exits non-zero without changing anything. Running it locally needs
+`gh` authenticated with write access to the repository.
 
 Deployment: Vercel builds `vercel.json`'s command on every push to `main` and serves
 `dist/`.
