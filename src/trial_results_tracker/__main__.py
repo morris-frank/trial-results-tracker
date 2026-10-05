@@ -12,7 +12,7 @@ from trial_results_tracker.classify import KEESTRA_2021, V1_0, classify
 from trial_results_tracker.crosswalk import crosswalk
 from trial_results_tracker.fetch import code_sha, fetch
 from trial_results_tracker.parse import parse
-from trial_results_tracker.render import render
+from trial_results_tracker.render import headline, render
 
 SNAPSHOT = Path(__file__).resolve().parents[2] / "SNAPSHOT"
 
@@ -46,6 +46,7 @@ def build(out: Path, snapshot_dir: Path | None = None) -> None:
             "code_sha": sha,
             "code_sha_short": sha[:12],
         },
+        headline(counts, V1_0.name, data_date),
     )
 
 
