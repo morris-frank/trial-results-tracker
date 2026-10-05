@@ -98,18 +98,7 @@ The licence and date columns come from the GitHub API on 2026-10-04. Copying AGP
 
 ## Recommendation
 
-Ship **methodology v1.0** as a versioned, Keestra-compatible core with explicit corrections. Every published number carries the methodology version, the CT.gov `dataTimestamp`, and the code commit.
-
-1. **Scope**: interventional ClinicalTrials.gov studies only, from API v2 snapshots. EUCTR, CTIS and publications are out of scope for v1.
-2. **Clock**: primary completion date (WHO norm). Partial dates resolve to the *last* day of the month, the reading most favourable to the sponsor. Fall back to completion date only when PCD is missing, and tag the trial `pcd_fallback`.
-3. **Due**: COMPLETED or TERMINATED, PCD type ACTUAL, and PCD + 365 days before the snapshot. A 30-day grace (395 days in total) applies only to the in-time versus late cut, to match Keestra and FDAAA. Trials with no reporting requirement: WITHDRAWN; TERMINATED with actual enrolment 0.
-4. **Reported**: the reporting date is `resultsFirstSubmitDate`, the sponsor's own action, as the FDAAA tracker does. Show `resultsFirstPostDate` next to it. A submission whose latest unposted event is RESET, with nothing posted, is reported as **submitted, returned in QC**. It is not counted as on-time reporting.
-5. **Categories**: no requirement · due, not reported · due, reported in time · due, reported late · due, submitted but returned in QC · completed, not yet due · ongoing · **status overdue** (open status, PCD more than 395 days ago) · **inconsistent** (UNKNOWN status; COMPLETED/TERMINATED with ESTIMATED or missing PCD).
-6. **Headline**: % of due trials not reported, with Wilson 95% CIs and the denominator shown. Publish beside it an **upper-bound** figure that counts status-overdue and inconsistent trials as unreported. This states the TranspariMED uncertainty openly instead of hiding it.
-7. **Attribution**: lead sponsor. Responsible party and collaborators are stored and shown, never counted. Keep `sponsor_raw` alongside a `sponsor_id` from a curated alias table, seeded by ROR `chosen: true` matches. Review by hand every sponsor above the ranking threshold. Record `match_method` per row. No parent/child roll-up in v1.
-8. **Ranking**: rank only sponsors with 20 or more due trials (see Open decision 6). Everyone else is searchable but not ranked.
-9. **Validation per release**: a stratified random sample of 200 trials (about 25 per category). Two people code each trial against the live registry page. Publish per-category agreement with CIs, and keep a public corrections log.
-10. **v1.1 (not v1)**: a secondary "any results" measure using self-hosted TrialScout (MIT). Matches show as "possible publication" and never change the registry-based headline.
+Adopted as methodology v1.0 with D1–D15 resolved as recommended in `docs/plan.md`; the versioned method text is `docs/methodology.md`, which supersedes the list that stood here.
 
 ## Open decisions
 

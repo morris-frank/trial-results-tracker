@@ -14,7 +14,14 @@ from dataclasses import dataclass
 from datetime import date
 from enum import StrEnum
 
-from trial_results_tracker.model import OverallStatus, Precision, RegistryDate, Trial
+from trial_results_tracker.model import (
+    DateType,
+    OverallStatus,
+    Precision,
+    RegistryDate,
+    Trial,
+    UnpostedEventType,
+)
 
 
 class Category(StrEnum):
@@ -97,3 +104,54 @@ def _keestra_2021(trial: Trial, as_of: date) -> Category:
 
 
 KEESTRA_2021 = RuleSet("Keestra-2021 replication", _keestra_2021)
+
+
+_V1_THRESHOLD = 395  # days; D2: one number for both the due and the in-time cut
+_V1_OPEN = _KEESTRA_ONGOING | {OverallStatus.SUSPENDED}  # D3: suspension is a pause
+
+
+def _v1_0(trial: Trial, as_of: date) -> Category:
+    """Methodology v1.0, docs/methodology.md; decisions D1-D5 in docs/plan.md.
+
+    Unlike Keestra, a trial is due only *after* 395 days, so a submission on day 395
+    is in time and the trial is never overdue on that day. Partial dates keep the
+    model's last-day-of-period reading.
+    """
+    status = trial.overall_status
+    pcd = trial.primary_completion
+    days_since_pcd = None if pcd is None else (as_of - pcd.value).days
+
+    if status is OverallStatus.WITHDRAWN:
+        return Category.NO_REPORTING_REQUIREMENT
+    if status in _V1_OPEN:  # D3, D5
+        if days_since_pcd is not None and days_since_pcd > _V1_THRESHOLD:
+            return Category.STATUS_OVERDUE
+        return Category.ONGOING
+    if status not in (OverallStatus.COMPLETED, OverallStatus.TERMINATED):
+        return Category.INCONSISTENT
+    if (
+        status is OverallStatus.TERMINATED
+        and trial.enrollment_count == 0
+        and trial.enrollment_type is DateType.ACTUAL
+    ):  # D4
+        return Category.NO_REPORTING_REQUIREMENT
+    if pcd is None or pcd.type is not DateType.ACTUAL:  # D4 (a), no fallback
+        return Category.INCONSISTENT
+    if days_since_pcd <= _V1_THRESHOLD:  # D2
+        return Category.COMPLETED_NOT_DUE
+    submitted = trial.results_first_submitted  # D1
+    if submitted is None:
+        return Category.DUE_NOT_REPORTED
+    latest = trial.latest_unposted_event
+    if (
+        trial.results_first_posted is None
+        and latest is not None
+        and latest.type is UnpostedEventType.RESET
+    ):  # D1
+        return Category.DUE_RETURNED_IN_QC
+    if (submitted.value - pcd.value).days <= _V1_THRESHOLD:  # D2
+        return Category.DUE_REPORTED_IN_TIME
+    return Category.DUE_REPORTED_LATE
+
+
+V1_0 = RuleSet("v1.0", _v1_0)
