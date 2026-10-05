@@ -7,7 +7,7 @@ The rules the tracker uses to sort a trial into a reporting category. The code i
 
 ## Standard
 
-WHO best practice: summary results on the registry within 12 months of primary completion ([WHO 2017](https://www.who.int/news/item/18-05-2017-joint-statement-on-registration)). This is a registry observation, not a legal finding; the legal-duty column is separate and reads "not determined" (AGENTS.md rule 2).
+WHO best practice: summary results on the registry within 12 months of primary completion ([WHO 2017](https://www.who.int/news/item/18-05-2017-joint-statement-on-registration)). This is a registry observation, not a legal finding; the legal-duty column is separate: a US "probable ACT" inference (`legal_us.py`), UK and EU not determined (AGENTS.md rule 2).
 
 ## Scope and evidence basis
 

@@ -16,16 +16,27 @@ $rows
     </table>
     <p>Evidence basis: <strong>registry only</strong>. "No results submitted" means no summary
       results on ClinicalTrials.gov as of $data_date; journal publications are not searched, so a trial in
-      that row may have reported elsewhere. Legal duty: <strong>not determined</strong>. The WHO
-      standard is an ethical norm; missing it is not by itself a breach of any law.</p>
+      that row may have reported elsewhere. The WHO standard is an ethical norm; missing it does not
+      by itself mean any law applies or was broken. Legal duty is a separate axis below.</p>
     <p>"Status overdue" holds trials still marked open more than 395 days after their primary
       completion date; "inconsistent record" holds trials whose registry entry cannot be read as finished
       or ongoing, such as a finished trial without an actual primary completion date. Neither is counted
       as unreported, and neither is "submitted but returned in quality control". These figures are
       aggregates; no sponsor is named.</p>
+    <h2>Legal duty: a separate axis</h2>
+    <p>Whether a law requires results is judged apart from the WHO categories above and never changes
+      them. For the United States we infer a <strong>probable applicable clinical trial</strong> (ACT)
+      under FDAAA 801 from registry fields, as of $data_date (rules on the
+      <a href="methodology.html#legal-duty">methodology page</a>). "Appears overdue" is an inference:
+      a lawful extension may exist that the registry does not publish.</p>
+$legal
+    <p>United Kingdom: <strong>not determined</strong>. Results duties under SI 2025/538 apply only to
+      trials ending on or after 28 Apr 2026, so none can be overdue before about 28 Apr 2027.
+      European Union: <strong>not determined</strong>. CTR due dates run from the end of the trial in
+      all member states, which only CTIS records.</p>
     <h2>Downloads</h2>
     <p><a href="trials.csv.gz">trials.csv.gz</a> (one row per trial, both rule sets) ·
       <a href="sponsors.csv">sponsors.csv</a> (trial counts per sponsor) ·
       <a href="manifest.json">manifest.json</a> (method, data timestamp, code version, licence).
-      Every row carries its evidence basis and data date; legal duty reads "not determined". $sponsor_note
+      Every row carries its evidence basis and data date; the US legal duty sits in its own column. $sponsor_note
       Data licence: <a href="$licence_url">$licence</a>, derived from ClinicalTrials.gov.</p>

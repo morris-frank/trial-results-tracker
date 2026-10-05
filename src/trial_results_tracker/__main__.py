@@ -11,13 +11,13 @@ from pathlib import Path
 from urllib.parse import quote
 from urllib.request import urlopen
 
-from trial_results_tracker import snapshot, sponsors, validate
+from trial_results_tracker import legal_us, snapshot, sponsors, validate
 from trial_results_tracker.classify import KEESTRA_2021, V1_0, classify
 from trial_results_tracker.crosswalk import crosswalk
 from trial_results_tracker.export import LICENCE, LICENCE_URL, export
 from trial_results_tracker.fetch import code_sha, fetch
 from trial_results_tracker.parse import parse
-from trial_results_tracker.render import headline, render
+from trial_results_tracker.render import headline, legal, render
 
 SNAPSHOT = Path(__file__).resolve().parents[2] / "SNAPSHOT"
 ALIASES = Path(__file__).resolve().parents[2] / "sponsors" / "aliases.csv"
@@ -64,6 +64,10 @@ def build(out: Path, snapshot_dir: Path | None = None, name_sponsors: bool = Fal
             "sponsor_note": NAMED if name_sponsors else UNNAMED,
         },
         headline(counts, V1_0.name, data_date),
+        legal(
+            Counter(legal_us.status(trial, as_of) for trial in trials),
+            sum(bool(trial.fdaaa801_violation) for trial in trials),
+        ),
     )
 
 

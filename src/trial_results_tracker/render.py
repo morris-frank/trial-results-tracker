@@ -10,6 +10,7 @@ from pathlib import Path
 from string import Template
 
 from trial_results_tracker.classify import Category
+from trial_results_tracker.legal_us import LegalDuty
 from trial_results_tracker.stats import wilson
 
 SITE = Path(__file__).resolve().parents[2] / "site"
@@ -77,6 +78,24 @@ def headline(counts: Counter[Category], method: str, data_date: str) -> str:
     return figure + bound
 
 
+def legal(counts: Counter[LegalDuty], flagged: int) -> str:
+    """The US legal-duty table, a separate axis from the WHO categories (AGENTS.md rule 2)."""
+    method = "v1.0, FDAAA probable ACT"  # the legal axis is part of methodology v1.0
+    rows = "\n".join(
+        f"        <tr><td>{escape(duty)}</td>{_number(f'{counts[duty]:,}', method)}</tr>"
+        for duty in LegalDuty
+    )
+    return (
+        "    <table>\n"
+        '      <thead><tr><th>Legal duty, United States</th><th class="n">Trials</th>'
+        "</tr></thead>\n"
+        f"      <tbody>\n{rows}\n      </tbody>\n    </table>\n"
+        f'    <p><span class="n">{flagged:,}</span> trials carry ClinicalTrials.gov\'s '
+        '"fdaaa801Violation" flag, set on information from FDA; it is quoted in the downloads '
+        "and is not our finding.</p>"
+    )
+
+
 def render(
     out: Path,
     counts: Counter[Category],
@@ -85,6 +104,7 @@ def render(
     comparison: str,
     context: dict[str, str],
     headline_html: str = "",
+    legal_html: str = "",
 ) -> None:
     """Write index.html and methodology.html. `counts` are under `method`; `cross` is keyed by
     (`comparison` category, `method` category); `context` fills the templates' other fields."""
@@ -115,6 +135,7 @@ def render(
         "crosswalk_rows": crosswalk_rows,
         "crosswalk_total": _number(f"{cross.total():,}", pair_method),
         "headline": headline_html,
+        "legal": legal_html,
     }
     out.mkdir(parents=True, exist_ok=True)
     for asset in ("favicon.png", "style.css"):

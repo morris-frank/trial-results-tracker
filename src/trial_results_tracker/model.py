@@ -37,6 +37,28 @@ class StudyType(StrEnum):
     EXPANDED_ACCESS = "EXPANDED_ACCESS"
 
 
+class Phase(StrEnum):
+    NA = "NA"
+    EARLY_PHASE1 = "EARLY_PHASE1"
+    PHASE1 = "PHASE1"
+    PHASE2 = "PHASE2"
+    PHASE3 = "PHASE3"
+    PHASE4 = "PHASE4"
+
+
+class PrimaryPurpose(StrEnum):
+    TREATMENT = "TREATMENT"
+    PREVENTION = "PREVENTION"
+    DIAGNOSTIC = "DIAGNOSTIC"
+    ECT = "ECT"
+    SUPPORTIVE_CARE = "SUPPORTIVE_CARE"
+    SCREENING = "SCREENING"
+    HEALTH_SERVICES_RESEARCH = "HEALTH_SERVICES_RESEARCH"
+    BASIC_SCIENCE = "BASIC_SCIENCE"
+    DEVICE_FEASIBILITY = "DEVICE_FEASIBILITY"
+    OTHER = "OTHER"
+
+
 class OverallStatus(StrEnum):
     ACTIVE_NOT_RECRUITING = "ACTIVE_NOT_RECRUITING"
     COMPLETED = "COMPLETED"
@@ -118,4 +140,9 @@ class Trial:
     is_fda_regulated_drug: bool | None
     is_fda_regulated_device: bool | None
     fdaaa801_violation: bool | None
-    unrecognised: tuple[Unrecognised, ...]  # every Unrecognised above, for the build report
+    unrecognised: tuple[Unrecognised, ...]  # every Unrecognised field, for the build report
+    # Read only by legal_us (T13), so the WHO rule tests need not set them.
+    phases: tuple[Phase | Unrecognised, ...] = ()
+    primary_purpose: PrimaryPurpose | Unrecognised | None = None
+    location_countries: tuple[str, ...] = ()  # countries only; no facility or contact field
+    is_us_export: bool | None = None

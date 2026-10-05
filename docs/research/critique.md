@@ -53,7 +53,7 @@ Not re-checked: the current ClinicalTrials.gov terms. The archived 2014 page cou
 9. **CI uncertainty for small sponsors.** Wilson CIs are proposed, but there is no rule for ordering the league table (point estimate vs lower bound) or for showing ties.
 10. **Keestra baseline comparison.** Decision 7 (data-sources) and history (engineering) defer AACT, yet methodology wants a Keestra-rules rerun "on the same snapshot". It is unclear whether any comparison to the 2022-08-01 numbers is planned, and whether the old site's data can be retrieved at all.
 11. **Contact with Keestra/UAEM.** Recommended in landscape, but no owner or channel is given.
-12. **Legal-duty axis maintenance.** FDAAA "probable ACT" logic would be re-derived from Bennett's MIT code. No note has checked that code's current pACT rules against 42 CFR 11.10.
+12. **Legal-duty axis maintenance.** FDAAA "probable ACT" logic would be re-derived from Bennett's MIT code. No note has checked that code's current pACT rules against 42 CFR 11.10. *Resolved 2026-10-05 (T13): see legal.md section 4, "Re-check of the FDAAA TrialsTracker's pACT logic".*
 13. **CT.gov current terms** are not re-verified (see above). AACT terms remain unread.
 14. **Failure modes of the nightly job.** Partial pulls, API schema changes (the version moves from 2.0.5) and a guard against publishing a half-classified snapshot are not covered. Contract tests are mentioned only for undocumented endpoints.
 15. **Accessibility and i18n** of a page that names institutions, and how the Dutch publisher name and "not Soilytix" statement are displayed. Imprint duty is listed as a lawyer question but has no placeholder in the build.

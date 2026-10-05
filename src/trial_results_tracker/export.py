@@ -13,12 +13,15 @@ from collections.abc import Iterable
 from datetime import date
 from pathlib import Path
 
+from trial_results_tracker import legal_us
 from trial_results_tracker.classify import KEESTRA_2021, V1_0, Category, classify
 from trial_results_tracker.model import RegistryDate, ResponsiblePartyType, SponsorClass, Trial
 
 INDIVIDUALS = "Individual sponsors (pooled)"
 EVIDENCE_BASIS = "registry only"
-LEGAL_DUTY = "not determined"  # D15 (a); never derived from the WHO category
+# D15 (b): US probable ACT from legal_us, never derived from the WHO category; UK and EU
+# stay undetermined (UK duties start for trials ending on or after 28 Apr 2026, EU needs CTIS).
+LEGAL_DUTY = "US: probable ACT under 42 CFR 11.10 (legal_us.py); UK and EU not determined"
 LICENCE = "CC BY 4.0"  # D12, CT.gov-derived data only
 LICENCE_URL = "https://creativecommons.org/licenses/by/4.0/"
 
@@ -39,6 +42,7 @@ TRIAL_COLUMNS = (
     "evidence_basis",
     "data_date",
     "legal_duty",
+    "fda_flag",
 )
 
 
@@ -105,7 +109,8 @@ def export(
                     v1 is Category.STATUS_OVERDUE,  # D5: open status, PCD over 395 days ago
                     EVIDENCE_BASIS,
                     data_date,
-                    LEGAL_DUTY,
+                    legal_us.status(trial, as_of),
+                    legal_us.fda_flag(trial),
                 )
             )
     with (out / "sponsors.csv").open("w", encoding="utf-8", newline="") as f:

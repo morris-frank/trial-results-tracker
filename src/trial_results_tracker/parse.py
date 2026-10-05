@@ -6,7 +6,9 @@ from datetime import date
 from trial_results_tracker.model import (
     DateType,
     OverallStatus,
+    Phase,
     Precision,
+    PrimaryPurpose,
     RegistryDate,
     ResponsiblePartyType,
     SponsorClass,
@@ -103,5 +105,17 @@ def parse(record: dict) -> Trial:
         is_fda_regulated_drug=oversight.get("isFdaRegulatedDrug"),
         is_fda_regulated_device=oversight.get("isFdaRegulatedDevice"),
         fdaaa801_violation=oversight.get("fdaaa801Violation"),
+        phases=tuple(enum(Phase, "phases", phase) for phase in design.get("phases", [])),
+        primary_purpose=enum(
+            PrimaryPurpose,
+            "designInfo.primaryPurpose",
+            design.get("designInfo", {}).get("primaryPurpose"),
+        ),
+        location_countries=tuple(
+            location["country"]
+            for location in protocol.get("contactsLocationsModule", {}).get("locations", [])
+            if "country" in location
+        ),
+        is_us_export=oversight.get("isUsExport"),
         unrecognised=tuple(unrecognised),
     )

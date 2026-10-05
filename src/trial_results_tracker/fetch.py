@@ -48,6 +48,10 @@ FIELDS = (
     _OVERSIGHT + "isFdaRegulatedDrug",
     _OVERSIGHT + "isFdaRegulatedDevice",
     _OVERSIGHT + "fdaaa801Violation",
+    _OVERSIGHT + "isUsExport",
+    "protocolSection.designModule.phases",
+    "protocolSection.designModule.designInfo.primaryPurpose",
+    "LocationCountry",  # the API's piece name: country only, no facility or contact
     "annotationSection.annotationModule.unpostedAnnotation.unpostedEvents",
     "hasResults",
 )

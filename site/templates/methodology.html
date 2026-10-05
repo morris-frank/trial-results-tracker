@@ -4,7 +4,8 @@
     <h2>Standard</h2>
     <p>The WHO 2017 joint statement asks for summary results on the registry within 12 months of
       primary completion (<a href="https://www.who.int/news/item/18-05-2017-joint-statement-on-registration">WHO</a>).
-      This is an ethical norm, not a legal duty; this site makes no legal determination.</p>
+      This is an ethical norm, not a legal duty. The legal-duty axis below is separate and never
+      changes a WHO category.</p>
 
     <h2>Rules: $method</h2>
     <p>Each trial is classified as of the data date. The clock is the primary completion date; a date
@@ -68,6 +69,33 @@ $crosswalk_rows
       </tbody>
       <tfoot><tr><th colspan="2">All interventional trials</th>$crosswalk_total</tr></tfoot>
     </table>
+
+    <h2 id="legal-duty">Legal duty: United States (FDAAA 801)</h2>
+    <p>ClinicalTrials.gov does not say which trials are applicable clinical trials (ACTs) under
+      <a href="https://www.ecfr.gov/current/title-42/part-11">42 CFR Part 11</a>, so we infer a
+      <strong>probable ACT</strong> when every criterion of 11.10 and 11.22(b) that the registry shows
+      holds: interventional study; an FDA-regulated drug other than phase 1, or an FDA-regulated
+      device that is not a feasibility study; a site in the United States or its territories, or a
+      product exported from there; not withdrawn. Trials run only under an IND or IDE number cannot be
+      seen, because those numbers are not public, so a trial without a US site or export reads
+      <strong>not determined</strong>, as does any trial missing one of these fields.</p>
+    <ol>
+      <li>A probable ACT with a primary completion date before 18 Jan 2017 is not determined: Part 11
+        results duties then cover only approved products (11.42), which the registry does not show.</li>
+      <li>Results submitted: <strong>results submitted</strong>, whatever the date (11.44 deadlines are about submission).</li>
+      <li>No more than 395 days (one year, 11.44(a), plus 30 days for quality control) after primary
+        completion: <strong>not yet due</strong>. After that, an estimated primary completion date is
+        not determined.</li>
+      <li>A certification of delay or an extension request on the record (dispFirstSubmitDate): not yet
+        due until two years after it was submitted, the 11.44(b) and (c) backstop.</li>
+      <li>Otherwise: <strong>appears overdue under FDAAA, absent an unpublished extension</strong>.</li>
+    </ol>
+    <p>These rules re-check the FDAAA TrialsTracker's
+      (<a href="https://github.com/ebmdatalab/clinicaltrials-act-tracker">ebmdatalab/clinicaltrials-act-tracker</a>, MIT)
+      against the regulation's text, and follow the text where the two differ.
+      Only FDA finds noncompliance: we quote ClinicalTrials.gov's "fdaaa801Violation" flag, set on
+      information from FDA, and add nothing to it. For the UK and the EU the legal duty is not determined;
+      see the overview.</p>
 
     <h2>Modifications to the ClinicalTrials.gov data</h2>
     <p>The data were requested from the ClinicalTrials.gov API $api_version, interventional studies only,
