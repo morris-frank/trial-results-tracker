@@ -7,10 +7,36 @@
       This is an ethical norm, not a legal duty; this site makes no legal determination.</p>
 
     <h2>Rules: $method</h2>
-    <p>The rules reimplement the code behind Keestra et al.,
+    <p>Each trial is classified as of the data date. The clock is the primary completion date; a date
+      given only as a month or a year sits on the last day of that period. One threshold, 395 days
+      (12 months plus 30 days for quality control), is used for both cuts.</p>
+    <ol>
+      <li><strong>No reporting requirement</strong>: status WITHDRAWN, or TERMINATED with an actual
+        enrolment of 0.</li>
+      <li>Status NOT_YET_RECRUITING, RECRUITING, ENROLLING_BY_INVITATION, ACTIVE_NOT_RECRUITING or
+        SUSPENDED (a pause, not an exemption): <strong>ongoing</strong> until 395 days after the primary
+        completion date, then <strong>status overdue</strong>. An open trial without a primary
+        completion date is ongoing.</li>
+      <li>Status COMPLETED or TERMINATED with an actual primary completion date:
+        <ul>
+          <li><strong>Completed, not yet due</strong>: no more than 395 days since primary completion.</li>
+          <li><strong>Due, no results submitted</strong>: otherwise, if no results have been submitted.</li>
+          <li><strong>Due, submitted but returned in quality control</strong>: results submitted, none
+            posted, and the latest registry event on the submission is a reset.</li>
+          <li><strong>Due, results submitted in time</strong> or <strong>late</strong>: results first
+            submitted no more than, or more than, 395 days after primary completion.</li>
+        </ul></li>
+      <li><strong>Inconsistent record</strong>: a finished trial whose primary completion date is missing
+        or only estimated, and every other status (such as UNKNOWN).</li>
+    </ol>
+    <p>The submission date counts, not the date results were posted. Status overdue and inconsistent
+      records are never counted as unreported.</p>
+
+    <h2>Comparison: $comparison</h2>
+    <p>The comparison rules reimplement the code behind Keestra et al.,
       <a href="https://doi.org/10.1186/s13063-021-05330-5">Trials 22:385 (2021)</a>
       (<a href="https://github.com/LeeSean96/GlobalHealthRanking">LeeSean96/GlobalHealthRanking</a>, MIT,
-      Copyright 2020 Yi Nian Lee), so later corrections can be measured against them. Each trial is
+      Copyright 2020 Yi Nian Lee), so the $method corrections can be measured against them. Each trial is
       classified as of the data date, in this order:</p>
     <ol>
       <li><strong>No reporting requirement</strong>: status WITHDRAWN or SUSPENDED.</li>
@@ -31,6 +57,17 @@
     <p>As in the original code, a primary completion date given only as a month is read as the first of
       that month, whether the date is actual or estimated is not read, and the submission date counts,
       not the date results were posted.</p>
+
+    <h2>Crosswalk: $comparison → $method</h2>
+    <p>Trials in the snapshot of $data_date by their category under each rule set, so a reader can see
+      how much each correction moves the numbers. Pairs with no trials are left out.</p>
+    <table id="crosswalk">
+      <thead><tr><th>$comparison</th><th>$method</th><th class="n">Trials</th></tr></thead>
+      <tbody>
+$crosswalk_rows
+      </tbody>
+      <tfoot><tr><th colspan="2">All interventional trials</th>$crosswalk_total</tr></tfoot>
+    </table>
 
     <h2>Modifications to the ClinicalTrials.gov data</h2>
     <p>The data were requested from the ClinicalTrials.gov API $api_version, interventional studies only,
