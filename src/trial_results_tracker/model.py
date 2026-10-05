@@ -146,3 +146,6 @@ class Trial:
     primary_purpose: PrimaryPurpose | Unrecognised | None = None
     location_countries: tuple[str, ...] = ()  # countries only; no facility or contact field
     is_us_export: bool | None = None
+    # resultsFirstSubmitDate, else the earliest dated unposted event: the registry sets
+    # the former only once results post (PR #11). Read by v1.0 (D1), not Keestra-2021.
+    results_submitted: RegistryDate | None = None

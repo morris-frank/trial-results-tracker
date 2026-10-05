@@ -90,10 +90,12 @@ def test_read_groups_found_and_searched(tmp_path):
 
 
 def unreported_snapshot(directory: Path, with_publications: bool) -> Path:
-    """The fixture snapshot with NCT01916382 marked completed, so it is due and unreported."""
+    """The fixture snapshot with NCT01916382 marked completed and its unposted events
+    dropped (else it is returned in QC, D1), so it is due and unreported."""
     write_snapshot(directory)
     studies = copy.deepcopy(STUDIES)
     studies[1]["protocolSection"]["statusModule"]["overallStatus"] = "COMPLETED"
+    del studies[1]["annotationSection"]
     with gzip.open(directory / "ctgov-2026-10-05.jsonl.gz", "wt", encoding="utf-8") as lines:
         for study in studies:
             lines.write(json.dumps(study) + "\n")

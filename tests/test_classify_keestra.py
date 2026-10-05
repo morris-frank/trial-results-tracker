@@ -1,5 +1,7 @@
+import json
 import types
 from datetime import date, timedelta
+from pathlib import Path
 
 import pytest
 
@@ -14,6 +16,7 @@ from trial_results_tracker.model import (
     Trial,
     Unrecognised,
 )
+from trial_results_tracker.parse import parse
 
 AS_OF = date(2026, 10, 5)
 
@@ -70,6 +73,14 @@ def test_finished_with_results_past_threshold_is_due_and_reported():
 
 def test_terminated_without_results_past_threshold_is_due_not_reported():
     assert keestra(trial(OverallStatus.TERMINATED, LONG_AGO)) is Category.DUE_NOT_REPORTED
+
+
+def test_submission_derived_from_unposted_events_leaves_keestra_unchanged():
+    # Keestra read resultsFirstSubmitDate only; v1.0's derived submission (D1) is not it.
+    record = json.loads((Path(__file__).parent / "fixtures" / "NCT02582203.json").read_text())
+    t = parse(record)
+    assert t.results_submitted is not None
+    assert keestra(t) is Category.DUE_NOT_REPORTED
 
 
 def test_finished_with_missing_pcd_is_due():

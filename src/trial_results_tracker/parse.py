@@ -74,6 +74,9 @@ def parse(record: dict) -> Trial:
     # By date, skipping undated events; on a tie the event listed later wins.
     dated = [(event.date, index, event) for index, event in enumerate(events) if event.date]
     latest = max(dated)[2] if dated else None
+    submitted = plain("resultsFirstSubmitDate")
+    if submitted is None and dated:
+        submitted = RegistryDate(min(dated)[0], Precision.DAY, None)
     enrollment = design.get("enrollmentInfo", {})
     lead = sponsors.get("leadSponsor", {})
 
@@ -117,5 +120,6 @@ def parse(record: dict) -> Trial:
             if "country" in location
         ),
         is_us_export=oversight.get("isUsExport"),
+        results_submitted=submitted,
         unrecognised=tuple(unrecognised),
     )

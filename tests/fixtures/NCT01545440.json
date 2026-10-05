@@ -1,0 +1,282 @@
+{
+    "protocolSection": {
+        "identificationModule": {
+            "nctId": "NCT01545440"
+        },
+        "statusModule": {
+            "statusVerifiedDate": "2015-03",
+            "overallStatus": "COMPLETED",
+            "startDateStruct": {
+                "date": "2012-03"
+            },
+            "primaryCompletionDateStruct": {
+                "date": "2013-03",
+                "type": "ACTUAL"
+            },
+            "completionDateStruct": {
+                "date": "2013-07",
+                "type": "ACTUAL"
+            },
+            "lastUpdatePostDateStruct": {
+                "date": "2015-03-05",
+                "type": "ESTIMATED"
+            }
+        },
+        "sponsorCollaboratorsModule": {
+            "responsibleParty": {
+                "type": "SPONSOR"
+            },
+            "leadSponsor": {
+                "name": "Genentech, Inc.",
+                "class": "INDUSTRY"
+            }
+        },
+        "designModule": {
+            "studyType": "INTERVENTIONAL",
+            "phases": [
+                "PHASE2"
+            ],
+            "designInfo": {
+                "primaryPurpose": "TREATMENT"
+            },
+            "enrollmentInfo": {
+                "count": 258,
+                "type": "ACTUAL"
+            }
+        },
+        "contactsLocationsModule": {
+            "locations": [
+                {
+                    "country": "United States"
+                },
+                {
+                    "country": "United States"
+                },
+                {
+                    "country": "United States"
+                },
+                {
+                    "country": "United States"
+                },
+                {
+                    "country": "United States"
+                },
+                {
+                    "country": "United States"
+                },
+                {
+                    "country": "United States"
+                },
+                {
+                    "country": "United States"
+                },
+                {
+                    "country": "United States"
+                },
+                {
+                    "country": "United States"
+                },
+                {
+                    "country": "United States"
+                },
+                {
+                    "country": "United States"
+                },
+                {
+                    "country": "United States"
+                },
+                {
+                    "country": "United States"
+                },
+                {
+                    "country": "United States"
+                },
+                {
+                    "country": "United States"
+                },
+                {
+                    "country": "United States"
+                },
+                {
+                    "country": "United States"
+                },
+                {
+                    "country": "United States"
+                },
+                {
+                    "country": "United States"
+                },
+                {
+                    "country": "United States"
+                },
+                {
+                    "country": "United States"
+                },
+                {
+                    "country": "United States"
+                },
+                {
+                    "country": "United States"
+                },
+                {
+                    "country": "United States"
+                },
+                {
+                    "country": "United States"
+                },
+                {
+                    "country": "United States"
+                },
+                {
+                    "country": "United States"
+                },
+                {
+                    "country": "United States"
+                },
+                {
+                    "country": "United States"
+                },
+                {
+                    "country": "United States"
+                },
+                {
+                    "country": "United States"
+                },
+                {
+                    "country": "United States"
+                },
+                {
+                    "country": "United States"
+                },
+                {
+                    "country": "United States"
+                },
+                {
+                    "country": "United States"
+                },
+                {
+                    "country": "United States"
+                },
+                {
+                    "country": "United States"
+                },
+                {
+                    "country": "United States"
+                },
+                {
+                    "country": "United States"
+                },
+                {
+                    "country": "United States"
+                },
+                {
+                    "country": "United States"
+                },
+                {
+                    "country": "United States"
+                },
+                {
+                    "country": "United States"
+                },
+                {
+                    "country": "United States"
+                },
+                {
+                    "country": "United States"
+                },
+                {
+                    "country": "United States"
+                },
+                {
+                    "country": "United States"
+                },
+                {
+                    "country": "United States"
+                },
+                {
+                    "country": "United States"
+                },
+                {
+                    "country": "United States"
+                },
+                {
+                    "country": "United States"
+                },
+                {
+                    "country": "United States"
+                },
+                {
+                    "country": "United States"
+                },
+                {
+                    "country": "United States"
+                },
+                {
+                    "country": "United States"
+                },
+                {
+                    "country": "United States"
+                },
+                {
+                    "country": "United States"
+                },
+                {
+                    "country": "United States"
+                },
+                {
+                    "country": "United States"
+                },
+                {
+                    "country": "United States"
+                },
+                {
+                    "country": "United States"
+                },
+                {
+                    "country": "United States"
+                },
+                {
+                    "country": "United States"
+                },
+                {
+                    "country": "United States"
+                },
+                {
+                    "country": "United States"
+                },
+                {
+                    "country": "United States"
+                },
+                {
+                    "country": "United States"
+                },
+                {
+                    "country": "United States"
+                },
+                {
+                    "country": "United States"
+                },
+                {
+                    "country": "Australia"
+                }
+            ]
+        }
+    },
+    "annotationSection": {
+        "annotationModule": {
+            "unpostedAnnotation": {
+                "unpostedEvents": [
+                    {
+                        "type": "RELEASE",
+                        "date": "2017-02-08"
+                    },
+                    {
+                        "type": "UNRELEASE",
+                        "dateUnknown": true
+                    }
+                ]
+            }
+        }
+    },
+    "hasResults": false
+}
