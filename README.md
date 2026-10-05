@@ -34,8 +34,9 @@ within 12 months of completion, whether or not a law requires it. Legal-complian
 trackers already exist for the US (FDAAA TrialsTracker) and the old EU register; nobody
 maintains one at the WHO standard for all sponsors.
 
-It is pre-release. Today the build publishes a placeholder page; the data pipeline,
-methodology and site arrive through the tasks in [`docs/`](docs/).
+It is pre-release. Today the build publishes unnamed aggregate counts from the snapshot
+pinned in `SNAPSHOT`, under the Keestra-2021 replication rules; the rest arrives through
+the tasks in [`docs/`](docs/).
 
 It never states that a trial is unreported without saying how it looked: registry
 results only, or registry results plus a search for journal publications.
@@ -74,7 +75,9 @@ with the `.jsonl.gz` and `manifest.json` as assets, and commits the tag to the o
 `gh` authenticated with write access to the repository.
 
 Deployment: Vercel builds `vercel.json`'s command on every push to `main` and serves
-`dist/`.
+`dist/`. The build downloads the pinned release over public HTTPS (no token) and fails if
+the download fails or the row count differs from the manifest; `build --snapshot-dir DIR`
+uses a local snapshot instead.
 
 ## Development
 
