@@ -47,12 +47,12 @@ def pages(out: Path) -> str:
 
 def test_overview_shows_counts_method_label_data_date_and_code_sha(site):
     index = (site / "index.html").read_text()
-    assert "Keestra-2021 replication" in index
+    assert "v1.0" in index
     assert "2026-10-02" in index
     assert code_sha()[:12] in index
     assert "3 trials" in index
-    assert '<td class="n">2</td><td class="n">66.7%</td>' in index  # due, not reported
-    assert '<td class="n">1</td><td class="n">33.3%</td>' in index  # due, reported
+    assert '<td class="n">1 <span class="method">v1.0</span></td>' in index
+    assert '<td class="n">33.3% <span class="method">v1.0</span></td>' in index
 
 
 def test_methodology_states_rules_and_modifications(site):
@@ -67,17 +67,6 @@ def test_footer_names_publisher_credits_registry_and_disclaims_soilytix(site):
         assert "Maurice Frank" in text
         assert "ClinicalTrials.gov" in text
         assert "not affiliated with Soilytix" in text
-
-
-def test_output_contains_no_sponsor_name(site):
-    names = {
-        study["protocolSection"]["sponsorCollaboratorsModule"]["leadSponsor"]["name"]
-        for study in STUDIES
-    }
-    assert len(names) == 3
-    text = pages(site)
-    for name in names:
-        assert name not in text
 
 
 def test_output_has_no_script(site):

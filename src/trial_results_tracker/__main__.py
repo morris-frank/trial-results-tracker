@@ -8,7 +8,8 @@ from datetime import date
 from pathlib import Path
 
 from trial_results_tracker import snapshot
-from trial_results_tracker.classify import KEESTRA_2021, classify
+from trial_results_tracker.classify import KEESTRA_2021, V1_0, classify
+from trial_results_tracker.crosswalk import crosswalk
 from trial_results_tracker.fetch import code_sha, fetch
 from trial_results_tracker.parse import parse
 from trial_results_tracker.render import render
@@ -25,14 +26,15 @@ def build(out: Path, snapshot_dir: Path | None = None) -> None:
         tag = "data-" + manifest["file"].removeprefix("ctgov-").removesuffix(".jsonl.gz")
         data_date = manifest["dataTimestamp"][:10]
         as_of = date.fromisoformat(data_date)
-        counts = Counter(
-            classify(parse(record), as_of, KEESTRA_2021) for record in snapshot.records(directory)
-        )
+        trials = [parse(record) for record in snapshot.records(directory)]
+    counts = Counter(classify(trial, as_of, V1_0) for trial in trials)
     # Vercel's Git build has no .git directory but exposes the commit.
     sha = os.environ.get("VERCEL_GIT_COMMIT_SHA") or code_sha()
     render(
         out,
         counts,
+        crosswalk(trials, as_of),
+        V1_0.name,
         KEESTRA_2021.name,
         {
             "data_date": data_date,

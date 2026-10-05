@@ -1,20 +1,24 @@
     <h1>Do clinical trials post their results?</h1>
     <p class="meta">$method · data processed by ClinicalTrials.gov on $data_date · code <code>$code_sha_short</code></p>
-    <p>Every interventional trial on ClinicalTrials.gov ($total trials), sorted into the
-      categories of Keestra et al. 2021 by a replication of their code. A trial is due once its
-      primary completion date is more than 395 days before the data date; it counts as reported
-      when summary results have been submitted to the registry.</p>
+    <p>Every interventional trial on ClinicalTrials.gov ($total trials, $method), sorted into
+      categories by methodology $method. A finished trial is due once its primary completion date is
+      more than 395 days before the data date; it counts as reported in time when summary results were
+      submitted to the registry within 395 days of that date. Every number below was counted under
+      $method; the <a href="methodology.html">methodology page</a> compares it with the $comparison of
+      Keestra et al. 2021.</p>
     <table>
       <thead><tr><th>Category</th><th class="n">Trials</th><th class="n">Share</th></tr></thead>
       <tbody>
 $rows
       </tbody>
-      <tfoot><tr><th>All interventional trials</th><td class="n">$total</td><td class="n">100.0%</td></tr></tfoot>
+      <tfoot><tr><th>All interventional trials</th>$total_cell$share_cell</tr></tfoot>
     </table>
     <p>Evidence basis: <strong>registry only</strong>. "No results submitted" means no summary
       results on ClinicalTrials.gov as of $data_date; journal publications are not searched, so a trial in
       that row may have reported elsewhere. Legal duty: <strong>not determined</strong>. The WHO
       standard is an ethical norm; missing it is not by itself a breach of any law.</p>
-    <p>"Inconsistent or stale record" holds trials whose registry status cannot be read as finished
-      or ongoing, including trials still marked open long after their primary completion date. They
-      are not counted as unreported. These figures are aggregates; no sponsor is named.</p>
+    <p>"Status overdue" holds trials still marked open more than 395 days after their primary
+      completion date; "inconsistent record" holds trials whose registry entry cannot be read as finished
+      or ongoing, such as a finished trial without an actual primary completion date. Neither is counted
+      as unreported, and neither is "submitted but returned in quality control". These figures are
+      aggregates; no sponsor is named.</p>
