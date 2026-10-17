@@ -36,6 +36,7 @@ class Category(StrEnum):
     COMPLETED_NOT_DUE = "completed_not_due"
     ONGOING = "ongoing"
     STATUS_OVERDUE = "status_overdue"
+    PROBABLY_NEVER_STARTED = "probably_never_started"  # v1.1 only
     INCONSISTENT = "inconsistent"
 
 
@@ -139,6 +140,12 @@ def _v1_0(trial: Trial, as_of: date) -> Category:
         return Category.INCONSISTENT
     if days_since_pcd <= _V1_THRESHOLD:  # D2
         return Category.COMPLETED_NOT_DUE
+    return _v1_due(trial)
+
+
+def _v1_due(trial: Trial) -> Category:
+    """The D1/D2 reporting rules for a trial past PCD + 395 days with a PCD."""
+    pcd = trial.primary_completion
     submitted = trial.results_submitted  # D1
     if submitted is None:
         return Category.DUE_NOT_REPORTED
@@ -162,3 +169,27 @@ def _v1_0(trial: Trial, as_of: date) -> Category:
 
 
 V1_0 = RuleSet("v1.0", _v1_0)
+
+
+def _v1_1(trial: Trial, as_of: date) -> Category:
+    """Methodology v1.1, docs/methodology.md: v1.0 with D16 splitting status overdue.
+
+    An open-status trial past PCD + 395 days is scored on the D1/D2 rules when it has
+    submitted results (v1.0's upper bound counted those as unreported) or is active, not
+    recruiting with an ACTUAL PCD (follow-up after primary completion is still due under
+    WHO). Not yet recruiting is probably never started. The rest stays status overdue.
+    """
+    category = _v1_0(trial, as_of)
+    if category is not Category.STATUS_OVERDUE:
+        return category
+    pcd = trial.primary_completion
+    if trial.results_submitted is not None or (
+        trial.overall_status is OverallStatus.ACTIVE_NOT_RECRUITING and pcd.type is DateType.ACTUAL
+    ):
+        return _v1_due(trial)
+    if trial.overall_status is OverallStatus.NOT_YET_RECRUITING:
+        return Category.PROBABLY_NEVER_STARTED
+    return Category.STATUS_OVERDUE
+
+
+V1_1 = RuleSet("v1.1", _v1_1)

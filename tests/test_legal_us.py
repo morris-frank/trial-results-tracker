@@ -11,7 +11,7 @@ import pytest
 from test_build import STUDIES, pages, site  # noqa: F401 (site is a fixture)
 
 from trial_results_tracker import legal_us
-from trial_results_tracker.classify import KEESTRA_2021, V1_0, classify
+from trial_results_tracker.classify import KEESTRA_2021, V1_1, classify
 from trial_results_tracker.export import export
 from trial_results_tracker.legal_us import LegalDuty, fda_flag, probable_act, status
 from trial_results_tracker.model import (
@@ -196,12 +196,12 @@ def test_who_categories_of_the_fixture_snapshot_are_unchanged(tmp_path):
         export(tmp_path / name, map(parse, records), AS_OF, meta, name_sponsors=False)
         with gzip.open(tmp_path / name / "trials.csv.gz", "rt", encoding="utf-8") as f:
             for row in csv.DictReader(io.StringIO(f.read())):
-                who = (row["category_keestra_2021"], row["category_v1_0"])
+                who = (row["category_keestra_2021"], row["category_v1_1"])
                 by_id.setdefault(row["nct_id"], []).append(who)
     expected = {
         s["protocolSection"]["identificationModule"]["nctId"]: (
             classify(parse(s), AS_OF, KEESTRA_2021),
-            classify(parse(s), AS_OF, V1_0),
+            classify(parse(s), AS_OF, V1_1),
         )
         for s in STUDIES
     }

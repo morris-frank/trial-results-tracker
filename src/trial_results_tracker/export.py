@@ -14,7 +14,7 @@ from datetime import date
 from pathlib import Path
 
 from trial_results_tracker import legal_us
-from trial_results_tracker.classify import KEESTRA_2021, V1_0, Category, classify
+from trial_results_tracker.classify import KEESTRA_2021, V1_1, Category, classify
 from trial_results_tracker.model import RegistryDate, ResponsiblePartyType, SponsorClass, Trial
 from trial_results_tracker.publications import EVIDENCE_BASIS as PUBLICATION_BASIS
 from trial_results_tracker.publications import FILE as PUBLICATIONS
@@ -37,7 +37,7 @@ TRIAL_COLUMNS = (
     "sponsor_id",
     "sponsor_class",
     "category_keestra_2021",
-    "category_v1_0",
+    "category_v1_1",
     "primary_completion",
     "primary_completion_type",
     "results_first_submitted",
@@ -102,7 +102,7 @@ def export(
         writer = csv.writer(f)
         writer.writerow(TRIAL_COLUMNS)
         for trial in trials:
-            v1 = classify(trial, as_of, V1_0)
+            v1 = classify(trial, as_of, V1_1)
             if is_individual(trial):
                 sponsor = INDIVIDUALS
             elif name_sponsors:
@@ -123,7 +123,8 @@ def export(
                     _text(pcd and pcd.type),
                     _date(trial.results_first_submitted),
                     _date(trial.results_first_posted),
-                    v1 is Category.STATUS_OVERDUE,  # D5: open status, PCD over 395 days ago
+                    v1
+                    is Category.STATUS_OVERDUE,  # D5, D16: open, PCD over 395 days ago, no results
                     EVIDENCE_BASIS,
                     data_date,
                     legal_us.status(trial, as_of),
@@ -137,7 +138,7 @@ def export(
             (
                 "sponsor",
                 "trials",
-                *(f"v1_0_{c}" for c in V1_CATEGORIES),
+                *(f"v1_1_{c}" for c in V1_CATEGORIES),
                 "evidence_basis",
                 "data_date",
             )
@@ -153,7 +154,7 @@ def export(
                 )
             )
     manifest = {
-        "methods": [KEESTRA_2021.name, V1_0.name],
+        "methods": [KEESTRA_2021.name, V1_1.name],
         "dataTimestamp": meta["dataTimestamp"],
         "dataDate": data_date,
         "snapshot": meta["snapshot"],

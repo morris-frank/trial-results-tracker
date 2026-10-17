@@ -19,10 +19,10 @@ def site(tmp_path):
     return out
 
 
-def test_overview_defaults_to_v1_0(site):
+def test_overview_defaults_to_v1_1(site):
     index = (site / "index.html").read_text()
-    assert "v1.0" in index
-    # The fixture's three trials under v1.0: one in time, one late, one inconsistent.
+    assert "v1.1" in index
+    # The fixture's three trials under v1.1: one in time, one late, one inconsistent.
     for label in ("Due, results submitted in time", "Due, results submitted late"):
         assert re.search(rf"<td>{label}</td><td class=\"n\">1 ", index)
     assert "<td>Due, results submitted</td>" not in index  # Keestra's unsplit category
@@ -38,13 +38,13 @@ def test_methodology_renders_the_crosswalk_for_the_snapshot(site):
     }
 
 
-def test_every_rendered_number_carries_the_v1_0_label(site):
+def test_every_rendered_number_carries_the_v1_1_label(site):
     text = pages(site)
     cells = re.findall(r'<td class="n">(.*?)</td>', text)
     assert cells
     for cell in cells:
-        assert '<span class="method">' in cell and "v1.0" in cell, cell
-    assert "3 trials, v1.0" in text
+        assert '<span class="method">' in cell and "v1.1" in cell, cell
+    assert "3 trials, v1.1" in text
 
 
 def test_output_contains_no_sponsor_name(site):

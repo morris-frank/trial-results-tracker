@@ -14,7 +14,7 @@ from urllib.parse import quote
 from urllib.request import urlopen
 
 from trial_results_tracker import legal_us, notify, publications, snapshot, sponsors, validate
-from trial_results_tracker.classify import KEESTRA_2021, V1_0, Category, classify
+from trial_results_tracker.classify import KEESTRA_2021, V1_1, Category, classify
 from trial_results_tracker.crosswalk import crosswalk
 from trial_results_tracker.export import LICENCE, LICENCE_URL, export
 from trial_results_tracker.fetch import code_sha, fetch
@@ -33,7 +33,7 @@ UNNAMED = (
 
 
 def summarise(directory: Path, categorise: bool = True) -> notify.Summary:
-    """Tag, data date, rows and (optionally) v1.0 counts of a snapshot, as the headline counts."""
+    """Tag, data date, rows and (optionally) v1.1 counts of a snapshot, as the headline counts."""
     manifest = snapshot.manifest(directory)
     # The release tag the snapshot task gave this file, so a local override is labelled too.
     tag = "data-" + manifest["file"].removeprefix("ctgov-").removesuffix(".jsonl.gz")
@@ -42,7 +42,7 @@ def summarise(directory: Path, categorise: bool = True) -> notify.Summary:
     if categorise:
         as_of = date.fromisoformat(data_date)
         counts = Counter(
-            classify(parse(record), as_of, V1_0) for record in snapshot.records(directory)
+            classify(parse(record), as_of, V1_1) for record in snapshot.records(directory)
         )
     return notify.Summary(tag, data_date, manifest["rowsWritten"], counts)
 
@@ -62,8 +62,8 @@ def build(out: Path, snapshot_dir: Path | None = None, name_sponsors: bool = Fal
             links = publications.read(directory / manifest["publications"])
             out.mkdir(parents=True, exist_ok=True)
             shutil.copy(directory / manifest["publications"], out / publications.FILE)
-    counts = Counter(classify(trial, as_of, V1_0) for trial in trials)
-    unreported = {t.nct_id for t in trials if classify(t, as_of, V1_0) is Category.DUE_NOT_REPORTED}
+    counts = Counter(classify(trial, as_of, V1_1) for trial in trials)
+    unreported = {t.nct_id for t in trials if classify(t, as_of, V1_1) is Category.DUE_NOT_REPORTED}
     # Vercel's Git build has no .git directory but exposes the commit.
     sha = os.environ.get("VERCEL_GIT_COMMIT_SHA") or code_sha()
     meta = {"dataTimestamp": manifest["dataTimestamp"], "codeSha": sha, "snapshot": tag}
@@ -76,7 +76,7 @@ def build(out: Path, snapshot_dir: Path | None = None, name_sponsors: bool = Fal
         out,
         counts,
         crosswalk(trials, as_of),
-        V1_0.name,
+        V1_1.name,
         KEESTRA_2021.name,
         {
             "data_date": data_date,
@@ -91,20 +91,20 @@ def build(out: Path, snapshot_dir: Path | None = None, name_sponsors: bool = Fal
             "licence_url": LICENCE_URL,
             "sponsor_note": NAMED if name_sponsors else UNNAMED,
         },
-        headline(counts, V1_0.name, data_date),
+        headline(counts, V1_1.name, data_date),
         legal(
             Counter(legal_us.status(trial, as_of) for trial in trials),
             sum(bool(trial.fdaaa801_violation) for trial in trials),
         ),
         publication_share(links, unreported, data_date) if links else "",
-        league(ranked, V1_0.name, data_date, sponsors.THRESHOLD) if name_sponsors else "",
+        league(ranked, V1_1.name, data_date, sponsors.THRESHOLD) if name_sponsors else "",
         ranked,
         disputes,
     )
 
 
 def validate_sample(out: Path, snapshot_dir: Path | None, seed: int | None, size: int) -> None:
-    """Draw the v1.0 validation sample from the pinned snapshot into `out`."""
+    """Draw the v1.1 validation sample from the pinned snapshot into `out`."""
     with tempfile.TemporaryDirectory() as scratch:
         directory = snapshot_dir or snapshot.download(SNAPSHOT.read_text().strip(), Path(scratch))
         manifest = snapshot.manifest(directory)
@@ -114,13 +114,13 @@ def validate_sample(out: Path, snapshot_dir: Path | None, seed: int | None, size
         categories = {}
         for record in snapshot.records(directory):
             trial = parse(record)
-            categories[trial.nct_id] = classify(trial, as_of, V1_0)
-    seed = validate.default_seed(V1_0.name, tag) if seed is None else seed
+            categories[trial.nct_id] = classify(trial, as_of, V1_1)
+    seed = validate.default_seed(V1_1.name, tag) if seed is None else seed
     sample = validate.draw(categories, size, seed)
-    stem = out / f"{V1_0.name}-{tag}"
+    stem = out / f"{V1_1.name}-{tag}"
     validate.write_sample(stem, sample, seed)
     meta = {
-        "method": V1_0.name,
+        "method": V1_1.name,
         "tag": tag,
         "release_url": f"https://github.com/morris-frank/trial-results-tracker/releases/tag/{tag}",
         "data_date": data_date,
@@ -172,7 +172,7 @@ def report(status: str, run_url: str, previous_tag: str, snapshot_dir: Path) -> 
                 previous = summarise(snapshot.download(previous_tag, Path(scratch)))
             except OSError as error:  # the report still goes out, saying there is no comparison
                 print(f"previous snapshot {previous_tag} unavailable: {error}", file=sys.stderr)
-    text = notify.message(status, run_url, V1_0.name, current, previous)
+    text = notify.message(status, run_url, V1_1.name, current, previous)
     print(text)
     notify.send(os.environ["TELEGRAM_BOT_TOKEN"], os.environ["TELEGRAM_CHAT_ID"], text)
 
@@ -189,7 +189,7 @@ def main(argv: list[str] | None = None) -> None:
     fetch_cmd.add_argument("--out", type=Path, default=Path("data/raw"))
     validate_cmd = sub.add_parser("validate", help="draw or score a validation sample")
     validate_sub = validate_cmd.add_subparsers(dest="step", required=True)
-    sample_cmd = validate_sub.add_parser("sample", help="draw the v1.0 sample and coding sheet")
+    sample_cmd = validate_sub.add_parser("sample", help="draw the v1.1 sample and coding sheet")
     sample_cmd.add_argument("--out", type=Path, default=Path("docs/validation"))
     sample_cmd.add_argument("--snapshot-dir", type=Path)
     sample_cmd.add_argument("--seed", type=int, help="default: derived from method and snapshot")
