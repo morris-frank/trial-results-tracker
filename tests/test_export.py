@@ -72,7 +72,7 @@ def test_legal_duty_is_its_own_column_and_separate_from_category(files):
     for row in rows(files[0]):
         assert row["legal_duty"] == "not determined"  # the fixture trials predate 2017
         assert row["fda_flag"] == ""
-        assert row["category_keestra_2021"] and row["category_v1_0"]
+        assert row["category_keestra_2021"] and row["category_v1_1"]
 
 
 def test_one_trial_row_per_record(files):
@@ -101,7 +101,7 @@ def test_flag_on_names_organisations_and_pools_individuals(tmp_path):
 
 def test_manifest_records_method_data_timestamp_code_and_licence(files):
     manifest = files[2]
-    assert manifest["methods"] == ["Keestra-2021 replication", "v1.0"]
+    assert manifest["methods"] == ["Keestra-2021 replication", "v1.1"]
     assert manifest["dataTimestamp"] == "2026-10-02T09:00:04"
     assert manifest["codeSha"] == "abc123"
     assert manifest["licence"] == "CC BY 4.0"

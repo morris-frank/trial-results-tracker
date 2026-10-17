@@ -83,7 +83,7 @@ def test_cli_draws_a_blind_coding_csv_then_scores_it(tmp_path):
     out = tmp_path / "validation"
     snap = write_snapshot(tmp_path / "snap")
     main(["validate", "sample", "--out", str(out), "--snapshot-dir", str(snap), "--seed", "1"])
-    stem = out / "v1.0-data-2026-10-05"
+    stem = out / "v1.1-data-2026-10-05"
     coding = list(csv.DictReader(Path(f"{stem}-coding.csv").read_text().splitlines()))
     assert {row["category"] for row in coding} == {""}  # blind: coders never see the key
     assert all(row["url"] == f"https://clinicaltrials.gov/study/{row['nct_id']}" for row in coding)

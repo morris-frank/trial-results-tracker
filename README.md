@@ -77,7 +77,7 @@ with the `.jsonl.gz` and `manifest.json` as assets, and commits the tag to the o
 `SNAPSHOT` file on `main`. A release is never overwritten: if that day's release exists,
 `mise run snapshot` exits non-zero without changing anything. Running it locally needs
 `gh` authenticated with write access to the repository. Every run, pass or fail, ends
-with a Telegram message: rows, v1.0 category deltas (the headline's method) against the previously
+with a Telegram message: rows, v1.1 category deltas (the headline's method) against the previously
 pinned release, the release URL and the job status.
 
 GitHub disables a scheduled workflow after 60 days without repository activity

@@ -18,7 +18,7 @@ from pathlib import Path
 from urllib.parse import urlencode
 
 from trial_results_tracker import snapshot
-from trial_results_tracker.classify import V1_0, Category, classify
+from trial_results_tracker.classify import V1_1, Category, classify
 from trial_results_tracker.fetch import Get, get_json
 from trial_results_tracker.parse import parse
 
@@ -108,14 +108,14 @@ def link(
 
 
 def link_snapshot(directory: Path, today: date | None = None) -> Path:
-    """Search the snapshot's v1.0 due-not-reported trials and name the file in its manifest,
+    """Search the snapshot's v1.1 due-not-reported trials and name the file in its manifest,
     so the snapshot task releases it and the build downloads it."""
     manifest = snapshot.manifest(directory)
     as_of = date.fromisoformat(manifest["dataTimestamp"][:10])
     ids = [
         trial.nct_id
         for trial in map(parse, snapshot.records(directory))
-        if classify(trial, as_of, V1_0) is Category.DUE_NOT_REPORTED
+        if classify(trial, as_of, V1_1) is Category.DUE_NOT_REPORTED
     ]
     path = link(directory, ids, today=today)
     manifest["publications"] = FILE

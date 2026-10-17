@@ -50,12 +50,12 @@ def pages(out: Path) -> str:
 
 def test_overview_shows_counts_method_label_data_date_and_code_sha(site):
     index = (site / "index.html").read_text()
-    assert "v1.0" in index
+    assert "v1.1" in index
     assert "2026-10-02" in index
     assert code_sha()[:12] in index
     assert "3 trials" in index
-    assert '<td class="n">1 <span class="method">v1.0</span></td>' in index
-    assert '<td class="n">33.3% <span class="method">v1.0</span></td>' in index
+    assert '<td class="n">1 <span class="method">v1.1</span></td>' in index
+    assert '<td class="n">33.3% <span class="method">v1.1</span></td>' in index
 
 
 def test_methodology_states_rules_and_modifications(site):
@@ -108,10 +108,10 @@ def test_download_failure_raises(tmp_path):
 
 def test_overview_headline_is_v1_with_ci_denominator_upper_bound_and_data_date(site):
     index = (site / "index.html").read_text()
-    # Under v1.0 the fixture's three trials are two due and reported, one inconsistent.
+    # Under v1.1 the fixture's three trials are two due and reported, one inconsistent.
     assert '<span class="n">0.0%</span> of <span class="n">2</span> due trials' in index
     assert '95% CI <span class="n">0.0%</span> to <span class="n">65.8%</span>' in index
-    assert "within 12 months of primary completion, as of 2026-10-02. Method v1.0." in index
+    assert "within 12 months of primary completion, as of 2026-10-02. Method v1.1." in index
     assert 'Upper bound: <span class="n">33.3%</span> of <span class="n">3</span> trials' in index
     for word in ("failed", "hid "):
         assert word not in index.lower()
@@ -123,5 +123,5 @@ def test_headline_with_nothing_due_says_so_instead_of_dividing_by_zero():
     from trial_results_tracker.classify import Category
     from trial_results_tracker.render import headline
 
-    html = headline(Counter({Category.ONGOING: 4}), "v1.0", "2026-10-02")
-    assert html == "    <p>No trials are due under method v1.0 as of 2026-10-02.</p>"
+    html = headline(Counter({Category.ONGOING: 4}), "v1.1", "2026-10-02")
+    assert html == "    <p>No trials are due under method v1.1 as of 2026-10-02.</p>"

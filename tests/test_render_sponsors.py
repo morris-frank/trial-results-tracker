@@ -175,7 +175,7 @@ def test_flag_on_league_table_shows_ranked_sponsor_with_ci_and_method(tmp_path, 
     assert SMALL not in pages(out)
     assert sorted(p.name for p in out.glob("sponsor-*.html")) == ["sponsor-alpha-university.html"]
     for cell in re.findall(r'<td class="n">(.*?)</td>', pages(out)):
-        assert '<span class="method">' in cell and "v1.0" in cell, cell
+        assert '<span class="method">' in cell and "v1.1" in cell, cell
 
 
 def test_sponsor_page_links_unreported_trials_and_lists_stale_ones_apart(

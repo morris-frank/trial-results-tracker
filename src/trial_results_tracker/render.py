@@ -35,12 +35,14 @@ LABELS = {
     Category.COMPLETED_NOT_DUE: "Completed, not yet due",
     Category.ONGOING: "Ongoing",
     Category.STATUS_OVERDUE: "Status overdue (still open long after primary completion)",
+    Category.PROBABLY_NEVER_STARTED: "Probably never started (not yet recruiting long after "
+    "its planned primary completion)",
     Category.NO_REPORTING_REQUIREMENT: "No reporting requirement",
     Category.INCONSISTENT: "Inconsistent record",
 }
 
 # docs/methodology.md "Categories": returned in QC is due but not unreported; status-overdue
-# and inconsistent trials enter only the upper bound (D5).
+# and inconsistent trials enter only the upper bound (D5); probably never started, neither (D16).
 DUE = (
     Category.DUE_NOT_REPORTED,
     Category.DUE_REPORTED_IN_TIME,
@@ -90,7 +92,7 @@ def headline(counts: Counter[Category], method: str, data_date: str) -> str:
 
 def legal(counts: Counter[LegalDuty], flagged: int) -> str:
     """The US legal-duty table, a separate axis from the WHO categories (AGENTS.md rule 2)."""
-    method = "v1.0, FDAAA probable ACT"  # the legal axis is part of methodology v1.0
+    method = "v1.1, FDAAA probable ACT"  # the legal axis is part of the methodology
     rows = "\n".join(
         f"        <tr><td>{escape(duty)}</td>{_number(f'{counts[duty]:,}', method)}</tr>"
         for duty in LegalDuty

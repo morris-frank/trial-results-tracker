@@ -147,8 +147,9 @@ def report(meta: Mapping[str, str], key: Mapping[str, Category]) -> str:
         "",
         "## Sample",
         "",
-        f"{len(key)} trials, a random sample stratified by v1.0 category with equal allocation "
-        "(a category with fewer trials than its share is taken whole); D14 in `docs/plan.md`. "
+        f"{len(key)} trials, a random sample stratified by {meta['method']} category with equal "
+        "allocation (a category with fewer trials than its share is taken whole); D14 in "
+        "`docs/plan.md`. "
         f"Reproduce with `python -m trial_results_tracker validate sample --seed {meta['seed']}` "
         f"against `SNAPSHOT` = `{meta['tag']}`.",
         "",
@@ -159,9 +160,10 @@ def report(meta: Mapping[str, str], key: Mapping[str, Category]) -> str:
         "## Coding protocol",
         "",
         "Two coders each copy the coding sheet (`-coding.csv`) and, working independently and "
-        "without seeing the key (`-sample.csv`), enter the v1.0 category (`docs/methodology.md`) "
-        f"each trial should have as of {meta['data_date']}. The link is the live registry page, "
-        "which may have changed since; code from its record history as of that date. Allowed "
+        f"without seeing the key (`-sample.csv`), enter the {meta['method']} category "
+        f"(`docs/methodology.md`) each trial should have as of {meta['data_date']}. The link is "
+        "the live registry page, which may have changed since; code from its record history as "
+        "of that date. Allowed "
         "values: " + ", ".join(f"`{c}`" for c in Category if c is not Category.DUE_AND_REPORTED),
         "",
         RESULTS,

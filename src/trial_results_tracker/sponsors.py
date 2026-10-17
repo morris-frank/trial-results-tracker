@@ -18,7 +18,7 @@ from datetime import date
 from enum import StrEnum
 from fractions import Fraction
 
-from trial_results_tracker.classify import V1_0, Category, classify
+from trial_results_tracker.classify import V1_1, Category, classify
 from trial_results_tracker.export import is_individual
 from trial_results_tracker.model import Trial
 from trial_results_tracker.render import DUE, STALE
@@ -77,19 +77,19 @@ def propose(raw: str, items: list[dict]) -> tuple[str, ...]:
 
 
 def candidates(trials: Iterable[Trial], as_of: date, threshold: int = THRESHOLD) -> list[str]:
-    """Raw lead-sponsor strings with at least `threshold` v1.0 due trials, individuals
+    """Raw lead-sponsor strings with at least `threshold` v1.1 due trials, individuals
     excluded (D8), most due first."""
     due = Counter(
         trial.sponsor_raw
         for trial in trials
-        if trial.sponsor_raw and not is_individual(trial) and classify(trial, as_of, V1_0) in DUE
+        if trial.sponsor_raw and not is_individual(trial) and classify(trial, as_of, V1_1) in DUE
     )
     return [raw for raw, n in due.most_common() if n >= threshold]
 
 
 @dataclass(frozen=True)
 class Ranked:
-    """One league-table row (docs/plan.md T12): v1.0 counts for a reviewed sponsor ID."""
+    """One league-table row (docs/plan.md T12): v1.1 counts for a reviewed sponsor ID."""
 
     sponsor_id: str
     name: str  # the commonest raw string among its trials, ties alphabetical
@@ -106,14 +106,14 @@ class Ranked:
 def rank(
     trials: Iterable[Trial], as_of: date, ids: dict[str, str], threshold: int = THRESHOLD
 ) -> list[Ranked]:
-    """Reviewed sponsors (`ids`, from `lookup`) with at least `threshold` v1.0 due trials,
+    """Reviewed sponsors (`ids`, from `lookup`) with at least `threshold` v1.1 due trials,
     highest share due-not-reported first, ties alphabetical. Individual trials never count
     (D8), so an individual sponsor never ranks."""
     groups: dict[str, list[tuple[Trial, Category]]] = {}
     for trial in trials:
         sponsor_id = ids.get(trial.sponsor_raw or "")
         if sponsor_id and not is_individual(trial):
-            groups.setdefault(sponsor_id, []).append((trial, classify(trial, as_of, V1_0)))
+            groups.setdefault(sponsor_id, []).append((trial, classify(trial, as_of, V1_1)))
     rows = []
     for sponsor_id, group in groups.items():
         due = sum(category in DUE for _, category in group)
