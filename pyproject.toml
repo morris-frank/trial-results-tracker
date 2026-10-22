@@ -18,7 +18,7 @@ build-backend = "uv_build"
 dev = ["pytest>=8"]
 
 [tool.uv]
-required-version = ">=0.12,<0.13" # enforce the uv minor that made the lock
+required-version = ">=0.13,<0.14" # enforce the uv minor that made the lock
 # Dependency cooldown: never resolve a release younger than this. Supply-chain
 # safety margin; reproducibility still comes from uv.lock + `uv sync --frozen`.
 exclude-newer = "2 weeks ago"
