@@ -8,6 +8,8 @@ import shutil
 import sys
 import tempfile
 from collections import Counter
+from collections.abc import Iterator
+from contextlib import contextmanager
 from datetime import date
 from pathlib import Path
 from urllib.parse import quote
@@ -32,15 +34,27 @@ UNNAMED = (
 )
 
 
-def summarise(directory: Path, categorise: bool = True) -> notify.Summary:
-    """Tag, data date, rows and (optionally) v1.1 counts of a snapshot, as the headline counts."""
-    manifest = snapshot.manifest(directory)
+@contextmanager
+def pinned(snapshot_dir: Path | None) -> Iterator[Path]:
+    """The local snapshot if given, else the pinned SNAPSHOT downloaded for the block."""
+    with tempfile.TemporaryDirectory() as scratch:
+        yield snapshot_dir or snapshot.download(SNAPSHOT.read_text().strip(), Path(scratch))
+
+
+def stamp(manifest: dict) -> tuple[str, str, date]:
+    """Release tag, data date and classification date of a snapshot manifest."""
     # The release tag the snapshot task gave this file, so a local override is labelled too.
     tag = "data-" + manifest["file"].removeprefix("ctgov-").removesuffix(".jsonl.gz")
     data_date = manifest["dataTimestamp"][:10]
+    return tag, data_date, date.fromisoformat(data_date)
+
+
+def summarise(directory: Path, categorise: bool = True) -> notify.Summary:
+    """Tag, data date, rows and (optionally) v1.1 counts of a snapshot, as the headline counts."""
+    manifest = snapshot.manifest(directory)
+    tag, data_date, as_of = stamp(manifest)
     counts = None
     if categorise:
-        as_of = date.fromisoformat(data_date)
         counts = Counter(
             classify(parse(record), as_of, V1_1) for record in snapshot.records(directory)
         )
@@ -49,13 +63,9 @@ def summarise(directory: Path, categorise: bool = True) -> notify.Summary:
 
 def build(out: Path, snapshot_dir: Path | None = None, name_sponsors: bool = False) -> None:
     """Classify the pinned snapshot (or a local one) and render the site into `out`."""
-    with tempfile.TemporaryDirectory() as scratch:
-        directory = snapshot_dir or snapshot.download(SNAPSHOT.read_text().strip(), Path(scratch))
+    with pinned(snapshot_dir) as directory:
         manifest = snapshot.manifest(directory)
-        # The release tag the snapshot task gave this file, so a local override is labelled too.
-        tag = "data-" + manifest["file"].removeprefix("ctgov-").removesuffix(".jsonl.gz")
-        data_date = manifest["dataTimestamp"][:10]
-        as_of = date.fromisoformat(data_date)
+        tag, data_date, as_of = stamp(manifest)
         trials = [parse(record) for record in snapshot.records(directory)]
         links = None
         if "publications" in manifest:  # T14; published beside the downloads
@@ -105,12 +115,8 @@ def build(out: Path, snapshot_dir: Path | None = None, name_sponsors: bool = Fal
 
 def validate_sample(out: Path, snapshot_dir: Path | None, seed: int | None, size: int) -> None:
     """Draw the v1.1 validation sample from the pinned snapshot into `out`."""
-    with tempfile.TemporaryDirectory() as scratch:
-        directory = snapshot_dir or snapshot.download(SNAPSHOT.read_text().strip(), Path(scratch))
-        manifest = snapshot.manifest(directory)
-        tag = "data-" + manifest["file"].removeprefix("ctgov-").removesuffix(".jsonl.gz")
-        data_date = manifest["dataTimestamp"][:10]
-        as_of = date.fromisoformat(data_date)
+    with pinned(snapshot_dir) as directory:
+        tag, data_date, as_of = stamp(snapshot.manifest(directory))
         categories = {}
         for record in snapshot.records(directory):
             trial = parse(record)
@@ -141,9 +147,8 @@ def validate_score(sample: Path, coder_a: Path, coder_b: Path) -> None:
 def sponsors_seed(table: Path, snapshot_dir: Path | None) -> int:
     """Append unreviewed ROR proposals to `table` for every raw string above D6's threshold
     that has no row yet; existing rows, reviewed or not, are kept as they are."""
-    with tempfile.TemporaryDirectory() as scratch:
-        directory = snapshot_dir or snapshot.download(SNAPSHOT.read_text().strip(), Path(scratch))
-        as_of = date.fromisoformat(snapshot.manifest(directory)["dataTimestamp"][:10])
+    with pinned(snapshot_dir) as directory:
+        _, _, as_of = stamp(snapshot.manifest(directory))
         wanted = sponsors.candidates(map(parse, snapshot.records(directory)), as_of)
     rows = list(csv.reader(table.open(encoding="utf-8")))[1:] if table.exists() else []
     known = {row[0] for row in rows}
