@@ -12,7 +12,6 @@ ruff = "0.15"
 gitleaks = "latest"
 prek = "latest"        # fast Rust drop-in for pre-commit
 osv-scanner = "latest"
-"npm:wrangler" = "4"     # Cloudflare deploy
 
 [env]
 UV_PROJECT_ENVIRONMENT = ".venv" # keep the venv at repo root
@@ -99,7 +98,7 @@ echo "$tag" > SNAPSHOT
 description = "Build, then upload dist/ to Cloudflare (needs CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID)"
 # Production names sponsors (D7 gate passed); a plain `mise run build` does not.
 env = { NAME_SPONSORS = "1" }
-run = ["mise run build", "wrangler deploy"]
+run = ["mise run build", "npx --yes wrangler@4 deploy"]
 
 [tasks."sponsors:seed"]
 description = "Propose ROR matches (chosen: true only) into sponsors/aliases.csv, unreviewed, for sponsors above the D6 threshold"
