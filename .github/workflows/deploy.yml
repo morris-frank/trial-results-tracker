@@ -1,0 +1,31 @@
+name: Deploy
+
+# Builds the pinned snapshot and uploads dist/ to Cloudflare Workers static assets.
+on:
+  push:
+    branches: [main]
+  workflow_call:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      # main, not the triggering sha: called from refresh, the pin commit is newer.
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: jdx/mise-action@v2
+        with:
+          cache: true
+      - run: uv sync --frozen
+      - run: mise run deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}

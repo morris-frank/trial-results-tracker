@@ -7,7 +7,7 @@ __pycache__/
 # Tooling
 .mise/
 .DS_Store
-.vercel/
+.wrangler/
 # Build output and fetched registry data: regenerated, never committed.
 dist/
 data/

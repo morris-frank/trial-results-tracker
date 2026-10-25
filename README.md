@@ -86,8 +86,9 @@ The weekly pin commit is meant to count as that activity, but whether a commit m
 with `GITHUB_TOKEN` counts is **[unverified]**; if the weekly report stops arriving,
 re-enable the workflow in the Actions tab.
 
-Deployment: Vercel builds `vercel.json`'s command on every push to `main` and serves
-`dist/`, so the refresh's pin commit is what deploys new data. The build downloads the pinned release over public HTTPS (no token) and fails if
+Deployment: the `deploy` workflow runs `mise run deploy` (build, then `wrangler deploy` of
+`dist/` to Cloudflare Workers static assets) on every push to `main`, and the refresh calls it
+after its pin commit, because a `GITHUB_TOKEN` push triggers no other workflow. The build downloads the pinned release over public HTTPS (no token) and fails if
 the download fails or the row count differs from the manifest; `build --snapshot-dir DIR`
 uses a local snapshot instead.
 

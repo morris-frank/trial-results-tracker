@@ -27,7 +27,7 @@ The repository contract for humans and coding agents; `CLAUDE.md` links here.
 - `sponsors/disputes.csv`: open disputes, shown as per-trial notes; `CORRECTIONS.md` logs outcomes.
 - `tests/`: pytest.
 - `docs/`: research and plans, deleted or folded into code when done.
-- `vercel.json`: the deploy. Vercel builds every push to `main`.
+- `wrangler.jsonc`: the deploy. `.github/workflows/deploy.yml` uploads `dist/` to Cloudflare on every push to `main`.
 
 ## Workflow
 

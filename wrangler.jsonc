@@ -1,0 +1,7 @@
+// The deploy: dist/ served as Workers static assets. `mise run deploy` builds and uploads it.
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "trial-results-tracker",
+  "compatibility_date": "2026-10-01",
+  "assets": { "directory": "./dist" }
+}
